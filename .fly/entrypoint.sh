@@ -13,3 +13,4 @@ if [ $# -gt 0 ]; then
 else
     exec supervisord -c /etc/supervisor/supervisord.conf
 fi
+
