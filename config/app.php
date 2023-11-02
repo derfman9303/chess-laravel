@@ -56,6 +56,9 @@ return [
 
     'asset_url' => env('ASSET_URL', null),
 
+    'port' => env('APP_PORT', 8080),
+    'host' => env('APP_HOST', '0.0.0.0'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
