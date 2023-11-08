@@ -5573,28 +5573,14 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     pawnValidMoves: function pawnValidMoves(board, piece, pieces, row, square, opponentPieces) {
       var king = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
       var result = {};
+      var r = row;
+      var s = square;
       if (piece.color === "white") {
         // forward 1
-        var r = row - 1;
-        var s = square;
-        if (r >= 0) {
-          if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false) {
-            if (board[r][s] === "empty") {
-              result[r + ',' + s] = 'highlighted';
-            }
-          }
-        }
+        this.addSquareHighlightingPawn(board, king, piece, pieces, opponentPieces, row - 1, square, result);
         if (!piece.moved) {
           // forward 2
-          r = row - 2;
-          s = square;
-          if (r >= 0) {
-            if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false) {
-              if (board[r][s] === "empty" && board[row - 1][s] === 'empty') {
-                result[r + ',' + s] = 'highlighted';
-              }
-            }
-          }
+          this.addSquareHighlightingPawn(board, king, piece, pieces, opponentPieces, row - 2, square, result);
         }
 
         // capture left
@@ -5620,46 +5606,30 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         }
       } else {
         // forward 1
-        var _r = row + 1;
-        var _s = square;
-        if (_r < 8) {
-          if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, _r, _s) == false) {
-            if (board[_r][_s] === "empty") {
-              result[_r + ',' + _s] = 'highlighted';
-            }
-          }
-        }
+        this.addSquareHighlightingPawn(board, king, piece, pieces, opponentPieces, row + 1, square, result);
         if (!piece.moved) {
           // forward 2
-          _r = row + 2;
-          _s = square;
-          if (_r < 8) {
-            if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, _r, _s) == false) {
-              if (board[_r][_s] === "empty" && board[row + 1][_s] === 'empty') {
-                result[_r + ',' + _s] = 'highlighted';
-              }
-            }
-          }
+          this.addSquareHighlightingPawn(board, king, piece, pieces, opponentPieces, row + 2, square, result);
         }
 
         // capture left
-        _r = row + 1;
-        _s = square - 1;
-        if (_r < 8 && _s >= 0) {
-          if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, _r, _s) == false) {
-            if (board[_r][_s] !== 'empty' && this.getPiece(board, pieces, _r, _s).color !== piece.color) {
-              result[_r + ',' + _s] = 'capture';
+        r = row + 1;
+        s = square - 1;
+        if (r < 8 && s >= 0) {
+          if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false) {
+            if (board[r][s] !== 'empty' && this.getPiece(board, pieces, r, s).color !== piece.color) {
+              result[r + ',' + s] = 'capture';
             }
           }
         }
 
         // capture right
-        _r = row + 1;
-        _s = square + 1;
-        if (_r < 8 && _s < 8) {
-          if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, _r, _s) == false) {
-            if (board[_r][_s] !== 'empty' && this.getPiece(board, pieces, _r, _s).color !== piece.color) {
-              result[_r + ',' + _s] = 'capture';
+        r = row + 1;
+        s = square + 1;
+        if (r < 8 && s < 8) {
+          if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false) {
+            if (board[r][s] !== 'empty' && this.getPiece(board, pieces, r, s).color !== piece.color) {
+              result[r + ',' + s] = 'capture';
             }
           }
         }
@@ -5726,6 +5696,18 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             r++;
             s++;
             break;
+        }
+      }
+    },
+    addSquareHighlightingPawn: function addSquareHighlightingPawn(board, king, piece, pieces, opponentPieces, r, s, result) {
+      // Check if r/s coordinates are within the board
+      if (r >= 0 && r < 8 && s >= 0 && s < 8) {
+        // If king is set, check if the move in question would result in the king being targeted. Otherwise, equate to true so that the checkmate logic is ignored.
+        // We can ignore it because if you can make a move on your turn to capture the opponent's king, you don't need to worry about putting yourself in check or checkmate because the game ends.
+        if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false) {
+          if (board[r][s] === "empty") {
+            result[r + ',' + s] = 'highlighted';
+          }
         }
       }
     },
