@@ -137,10 +137,10 @@
                         if (this.grid[r][s].classList.contains("highlighted") || this.grid[r][s].classList.contains("capture")) {
                             this.movePiece(r, s);
                             this.reloadGrid();
-                            this.switchTurns();
+                            // this.switchTurns();
                         } else if (this.grid[r][s].classList.contains("castle")) {
                             this.castle(r, s);
-                            this.switchTurns();
+                            // this.switchTurns();
                         }
 
                         this.selectedPiece = null;

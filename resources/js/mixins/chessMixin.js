@@ -181,10 +181,182 @@ export default {
 
         kingValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {
             let result = {};
+
             // up
-            let r = row - 1;
-            let s = square;
-            if (r >= 0) {
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row - 1, square, result);
+    
+            // down
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row + 1, square, result);
+    
+            // left
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row, square - 1, result);
+    
+            // right
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row, square + 1, result);
+            
+            // up/left diagonal
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row - 1, square - 1, result);
+    
+            // up/right diagonal
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row - 1, square + 1, result);
+    
+            // down/left diagonal
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row + 1, square - 1, result);
+    
+            // down/right diagonal
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row + 1, square + 1, result);
+    
+            if (!piece.moved) {
+                // left castle
+                if (this.validLeftCastle(piece, pieces, board, row, square)) {
+                    result[row + ',' + (square - 4)] = 'castle';
+                }
+        
+                // right castle
+                if (this.validRightCastle(piece, pieces, board, row, square)) {
+                    result[row + ',' + (square + 3)] = 'castle';
+                }
+            }
+    
+            return result;
+        },
+    
+        queenValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {
+            let result = {};
+
+            // up
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'up');
+    
+            // down
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'down');
+    
+            // left
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'left');
+    
+            // right
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'right');
+    
+            // up/right diagonal
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'up/right');
+    
+            // up/left diagonal
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'up/left');
+    
+            // down/right diagonal
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'down/right');
+    
+            // down/left diagonal
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'down/left');
+    
+            return result;
+        },
+    
+        rookValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {
+            let result = {};
+
+            // up
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'up');
+    
+            // down
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'down');
+    
+            // left
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'left');
+    
+            // right
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'right');
+    
+            return result;
+        },
+    
+        bishopValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {
+            let result = {};
+
+            // up/right diagonal
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'up/right');
+    
+            // up/left diagonal
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'up/left');
+    
+            // down/right diagonal
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'down/right');
+    
+            // down/left diagonal
+            this.addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, 'down/left');
+    
+            return result;
+        },
+    
+        knightValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {
+            let result = {};
+
+            // up 1
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row - 2, square - 1, result);
+    
+            // up 2
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row - 2, square + 1, result);
+    
+            // down 1
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row + 2, square - 1, result);
+    
+            // down 2
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row + 2, square + 1, result);
+    
+            // left 1
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row + 1, square - 2, result);
+    
+            // left 2
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row - 1, square - 2, result);
+    
+            // right 1
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row - 1, square + 2, result);
+    
+            // right 2
+            this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row + 1, square + 2, result);
+    
+            return result;
+        },
+    
+        pawnValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {
+            let result = {};
+    
+            if (piece.color === "white") {
+                // forward 1
+                this.addSquareHighlightingPawn(board, king, piece, pieces, opponentPieces, row - 1, square, result);
+    
+                if (!piece.moved) {
+                    // forward 2
+                    this.addSquareHighlightingPawn(board, king, piece, pieces, opponentPieces, row - 2, square, result);
+                }
+    
+                // capture left
+                this.addSquareHighlightingPawn(board, king, piece, pieces, opponentPieces, row - 1, square - 1, result, true);
+    
+                // capture right
+                this.addSquareHighlightingPawn(board, king, piece, pieces, opponentPieces, row - 1, square + 1, result, true);
+            } else {
+                // forward 1
+                this.addSquareHighlightingPawn(board, king, piece, pieces, opponentPieces, row + 1, square, result);
+    
+                if (!piece.moved) {
+                    // forward 2
+                    this.addSquareHighlightingPawn(board, king, piece, pieces, opponentPieces, row + 2, square, result);
+                }
+    
+                // capture left
+                this.addSquareHighlightingPawn(board, king, piece, pieces, opponentPieces, row + 1, square - 1, result, true);
+    
+                // capture right
+                this.addSquareHighlightingPawn(board, king, piece, pieces, opponentPieces, row + 1, square + 1, result, true);
+            }
+    
+            return result;
+        },
+
+        addSquareHighlighting(board, king, piece, pieces, opponentPieces, r, s, result) {
+
+            // Check if r/s coordinates are within the board
+            if (r >= 0 && r < 8 && s >= 0 && s < 8) {
                 // If king is set, check if the move in question would result in the king being targeted. Otherwise, equate to true so that the checkmate logic is ignored.
                 // We can ignore it because if you can make a move on your turn to capture the opponent's king, you don't need to worry about putting yourself in check or checkmate because the game ends.
                 if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
@@ -195,618 +367,78 @@ export default {
                     }
                 }
             }
-    
-            // down
-            r = row + 1;
-            s = square;
-            if (r < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                    }
-                }
-            }
-    
-            // left
-            r = row;
-            s = square - 1;
-            if (s >= 0) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                    }
-                }
-            }
-    
-            // right
-            r = row;
-            s = square + 1;
-            if (s < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                    }
-                }
-            }
-            
-            // up/left diagonal
-            r = row - 1;
-            s = square - 1;
-            if (r >= 0 && s >= 0) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                    }
-                }
-            }
-    
-            // up/right diagonal
-            r = row - 1;
-            s = square + 1;
-            if (r >= 0 && s < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                    }
-                }
-            }
-    
-            // down/left diagonal
-            r = row + 1;
-            s = square - 1;
-            if (r < 8 && s >= 0) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                    }
-                }
-            }
-    
-            // down/right diagonal
-            r = row + 1;
-            s = square + 1;
-            if (r < 8 && s < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                    }
-                }
-            }
-    
-            if (!piece.moved) {
-                r = row;
-                s = square;
-                // left castle
-                if (this.validLeftCastle(piece, pieces, board, r, s)) {
-                    result[r + ',' + (s - 4)] = 'castle';
-                }
-        
-                // right castle
-                if (this.validRightCastle(piece, pieces, board, r, s)) {
-                    result[r + ',' + (s + 3)] = 'castle';
-                }
-            }
-    
-            return result;
         },
-    
-        queenValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {
-            let result = {};
-            // up
-            let r = row;
-            let s = square;
-            while (r >= 0) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                r--;
-            }
-    
-            // down
-            r = row;
-            s = square;
-            while (r < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                r++;
-            }
-    
-            // left
-            r = row;
-            s = square;
-            while (s >= 0) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                s--;
-            }
-    
-            // right
-            r = row;
-            s = square;
-            while (s < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                s++;
-            }
-    
-            // up/right diagonal
-            r = row;
-            s = square;
-            while (r >= 0 && s < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                r--;
-                s++;
-            }
-    
-            // up/left diagonal
-            r = row;
-            s = square;
-            while (r >= 0 && s >= 0) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                r--;
-                s--;
-            }
-    
-            // down/right diagonal
-            r = row;
-            s = square;
-            while (r < 8 && s < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                r++;
-                s++;
-            }
-    
-            // down/left diagonal
-            r = row;
-            s = square;
-            while (r < 8 && s >= 0) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                r++;
-                s--;
-            }
-    
-            return result;
-        },
-    
-        rookValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {
-            let result = {};
-            // up
-            let r = row;
-            let s = square;
-            while (r >= 0) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                r--;
-            }
-    
-            // down
-            r = row;
-            s = square;
-            while (r < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                r++;
-            }
-    
-            // left
-            r = row;
-            s = square;
-            while (s >= 0) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                s--;
-            }
-    
-            // right
-            r = row;
-            s = square;
-            while (s < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                s++;
-            }
-    
-            return result;
-        },
-    
-        bishopValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {
-            let result = {};
-            // up/right diagonal
-            let r = row;
-            let s = square;
-            while (r >= 0 && s < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                r--;
-                s++;
-            }
-    
-            // up/left diagonal
-            r = row;
-            s = square;
-            while (r >= 0 && s >= 0) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                r--;
-                s--;
-            }
-    
-            // down/right diagonal
-            r = row;
-            s = square;
-            while (r < 8 && s < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                r++;
-                s++;
-            }
-    
-            // down/left diagonal
-            r = row;
-            s = square;
-            while (r < 8 && s >= 0) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                        break;
-                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
-                        break;
-                    }
-                }
-                r++;
-                s--;
-            }
-    
-            return result;
-        },
-    
-        knightValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {
-            let result = {};
 
-            // up 1
-            let r = row - 2;
-            let s = square - 1;
-            if (r >= 0 && s >= 0) {
+        /**
+         * The same as the above function, except it works for pieces that can move in unobstructed lines
+         */
+        addSquareHighlightingLoop(board, king, piece, pieces, opponentPieces, row, square, result, direction) {
+            let r = row;
+            let s = square;
+
+            while (r >= 0 && r < 8 && s >= 0 && s < 8) {
                 if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
                     if (board[r][s] === "empty") {
                         result[r + ',' + s] = 'highlighted';
                     } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
                         result[r + ',' + s] = 'capture';
+                        break;
+                    } else if (this.getPiece(board, pieces, r, s).color === piece.color && (r !== row || s !== square)) {
+                        break;
                     }
                 }
-            }
-    
-            // up 2
-            r = row - 2;
-            s = square + 1;
-            if (r >= 0 && s < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                    }
+                
+                switch (direction) {
+                    case 'up':
+                        r--;
+                        break;
+                    case 'down':
+                        r++;
+                        break;
+                    case 'left':
+                        s--;
+                        break;
+                    case 'right':
+                        s++;
+                        break;
+                    case 'up/left':
+                        r--;
+                        s--;
+                        break;
+                    case 'up/right':
+                        r--;
+                        s++;
+                        break;
+                    case 'down/left':
+                        r++;
+                        s--;
+                        break;
+                    case 'down/right':
+                        r++;
+                        s++;
+                        break;
                 }
             }
-    
-            // down 1
-            r = row + 2;
-            s = square - 1;
-            if (r < 8 && s >= 0) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                    }
-                }
-            }
-    
-            // down 2
-            r = row + 2;
-            s = square + 1;
-            if (r < 8 && s < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                    }
-                }
-            }
-    
-            // left 1
-            r = row + 1;
-            s = square - 2;
-            if (r < 8 && s >= 0) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                    }
-                }
-            }
-    
-            // left 2
-            r = row - 1;
-            s = square - 2;
-            if (r >= 0 && s >= 0) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                    }
-                }
-            }
-    
-            // right 1
-            r = row - 1;
-            s = square + 2;
-            if (r >= 0 && s < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                    }
-                }
-            }
-    
-            // right 2
-            r = row + 1;
-            s = square + 2;
-            if (r < 8 && s < 8) {
-                if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                    if (board[r][s] === "empty") {
-                        result[r + ',' + s] = 'highlighted';
-                    } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-                        result[r + ',' + s] = 'capture';
-                    }
-                }
-            }
-    
-            return result;
         },
-    
-        pawnValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {
-            let result = {};
-    
-            if (piece.color === "white") {
-                // forward 1
-                let r = row - 1;
-                let s = square;
-                if (r >= 0) {
+
+        addSquareHighlightingPawn(board, king, piece, pieces, opponentPieces, r, s, result, capture = false) {
+
+            // Check if r/s coordinates are within the board
+            if (r >= 0 && r < 8 && s >= 0 && s < 8) {
+                if (capture) {
+                    if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
+                        if (board[r][s] !== "empty" && this.getPiece(board, pieces, r, s).color !== piece.color) {
+                            result[r + ',' + s] = 'capture';
+                        }
+                    }
+                } else {
                     if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
                         if (board[r][s] === "empty") {
                             result[r + ',' + s] = 'highlighted';
-                        }
-                    }
-                }
-    
-                if (!piece.moved) {
-                    // forward 2
-                    r = row - 2;
-                    s = square;
-                    if (r >= 0) {
-                        if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                            if (board[r][s] === "empty" && board[row - 1][s] === 'empty') {
-                                result[r + ',' + s] = 'highlighted';
-                            }
-                        }
-                    }
-                }
-    
-                // capture left
-                r = row - 1;
-                s = square - 1;
-                if (r >= 0 && s >= 0) {
-                    if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                        if (board[r][s] !== 'empty' && this.getPiece(board, pieces, r, s).color !== piece.color) {
-                            result[r + ',' + s] = 'capture';
-                        }
-                    }
-                }
-    
-                // capture right
-                r = row - 1;
-                s = square + 1;
-                if (r >= 0 && s < 8) {
-                    if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                        if (board[r][s] !== 'empty' && this.getPiece(board, pieces, r, s).color !== piece.color) {
-                            result[r + ',' + s] = 'capture';
-                        }
-                    }
-                }
-            } else {
-                // forward 1
-                let r = row + 1;
-                let s = square;
-                if (r < 8) {
-                    if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                        if (board[r][s] === "empty") {
-                            result[r + ',' + s] = 'highlighted';
-                        }
-                    }
-                }
-    
-                if (!piece.moved) {
-                    // forward 2
-                    r = row + 2;
-                    s = square;
-                    if (r < 8) {
-                        if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                            if (board[r][s] === "empty" && board[row + 1][s] === 'empty') {
-                                result[r + ',' + s] = 'highlighted';
-                            }
-                        }
-                    }
-                }
-    
-                // capture left
-                r = row + 1;
-                s = square - 1;
-                if (r < 8 && s >= 0) {
-                    if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                        if (board[r][s] !== 'empty' && this.getPiece(board, pieces, r, s).color !== piece.color) {
-                            result[r + ',' + s] = 'capture';
-                        }
-                    }
-                }
-    
-                // capture right
-                r = row + 1;
-                s = square + 1;
-                if (r < 8 && s < 8) {
-                    if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
-                        if (board[r][s] !== 'empty' && this.getPiece(board, pieces, r, s).color !== piece.color) {
-                            result[r + ',' + s] = 'capture';
                         }
                     }
                 }
             }
-    
-            return result;
         },
 
         /**
