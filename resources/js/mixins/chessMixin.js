@@ -940,6 +940,34 @@ export default {
             }
         },
 
+        castle(row, square, piece = this.selectedPiece, board = this.board, pieces = this.pieces, recursive = false) {
+
+            // Identify the rook to be castled
+            const rookIndex = board[row][square];
+    
+            // Vacate squares
+            board[pieces[piece].row][pieces[piece].square] = 'empty';
+            board[row][square] = 'empty';
+    
+            if (square === 7) {
+                // Move the king
+                this.movePiece(row, square - 1, pieces[piece], pieces, piece, board);
+    
+                // Move the rook
+                this.movePiece(row, square - 2, pieces[rookIndex], pieces, rookIndex, board);
+            } else if (square === 0) {
+                // Move the king
+                this.movePiece(row, square + 2, pieces[piece], pieces, piece, board);
+    
+                // Move the rook
+                this.movePiece(row, square + 3, pieces[rookIndex], pieces, rookIndex, board);
+            }
+    
+            if (!recursive) {
+                this.reloadGrid();
+            }
+        },
+
         validLeftCastle(piece, pieces, board) {
             let r = piece.row;
             let s = piece.square;
@@ -996,6 +1024,10 @@ export default {
                     }
                 }
             }
+        },
+
+        switchTurns() {
+            this.turn = !this.turn;
         },
 
         newPiece(type, color, row, square) {

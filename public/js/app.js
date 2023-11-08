@@ -5203,9 +5203,12 @@ __webpack_require__.r(__webpack_exports__);
           if (this.grid[r][s].classList.contains("highlighted") || this.grid[r][s].classList.contains("capture")) {
             this.movePiece(r, s);
             this.reloadGrid();
+            // this.switchTurns();
           } else if (this.grid[r][s].classList.contains("castle")) {
             this.castle(r, s);
+            // this.switchTurns();
           }
+
           this.selectedPiece = null;
           this.removeHighlighting();
         } else if (this.selectPiece(r, s)) {
@@ -6151,6 +6154,34 @@ __webpack_require__.r(__webpack_exports__);
         pieces[captured].captured = false;
       }
     },
+    castle: function castle(row, square) {
+      var piece = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : this.selectedPiece;
+      var board = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : this.board;
+      var pieces = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : this.pieces;
+      var recursive = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
+      // Identify the rook to be castled
+      var rookIndex = board[row][square];
+
+      // Vacate squares
+      board[pieces[piece].row][pieces[piece].square] = 'empty';
+      board[row][square] = 'empty';
+      if (square === 7) {
+        // Move the king
+        this.movePiece(row, square - 1, pieces[piece], pieces, piece, board);
+
+        // Move the rook
+        this.movePiece(row, square - 2, pieces[rookIndex], pieces, rookIndex, board);
+      } else if (square === 0) {
+        // Move the king
+        this.movePiece(row, square + 2, pieces[piece], pieces, piece, board);
+
+        // Move the rook
+        this.movePiece(row, square + 3, pieces[rookIndex], pieces, rookIndex, board);
+      }
+      if (!recursive) {
+        this.reloadGrid();
+      }
+    },
     validLeftCastle: function validLeftCastle(piece, pieces, board) {
       var r = piece.row;
       var s = piece.square;
@@ -6186,6 +6217,9 @@ __webpack_require__.r(__webpack_exports__);
           }
         }
       }
+    },
+    switchTurns: function switchTurns() {
+      this.turn = !this.turn;
     },
     newPiece: function newPiece(type, color, row, square) {
       return {
