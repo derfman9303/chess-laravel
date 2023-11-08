@@ -5200,7 +5200,12 @@ __webpack_require__.r(__webpack_exports__);
         var r = parseInt(currentElement.getAttribute('data-r'));
         var s = parseInt(currentElement.getAttribute('data-s'));
         if (this.selectedPiece !== null) {
-          console.log("Piece is not null");
+          if (this.grid[r][s].classList.contains("highlighted") || this.grid[r][s].classList.contains("capture")) {
+            this.movePiece(r, s);
+            this.reloadGrid();
+          } else if (this.grid[r][s].classList.contains("castle")) {
+            this.castle(r, s);
+          }
           this.selectedPiece = null;
           this.removeHighlighting();
         } else if (this.selectPiece(r, s)) {
