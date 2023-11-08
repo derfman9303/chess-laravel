@@ -5203,11 +5203,12 @@ __webpack_require__.r(__webpack_exports__);
           if (this.grid[r][s].classList.contains("highlighted") || this.grid[r][s].classList.contains("capture")) {
             this.movePiece(r, s);
             this.reloadGrid();
-            this.switchTurns();
+            // this.switchTurns();
           } else if (this.grid[r][s].classList.contains("castle")) {
             this.castle(r, s);
-            this.switchTurns();
+            // this.switchTurns();
           }
+
           this.selectedPiece = null;
           this.removeHighlighting();
 
@@ -5440,122 +5441,39 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     kingValidMoves: function kingValidMoves(board, piece, pieces, row, square, opponentPieces) {
       var king = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
       var result = {};
+
       // up
-      var r = row - 1;
-      var s = square;
-      if (r >= 0) {
-        // If king is set, check if the move in question would result in the king being targeted. Otherwise, equate to true so that the checkmate logic is ignored.
-        // We can ignore it because if you can make a move on your turn to capture the opponent's king, you don't need to worry about putting yourself in check or checkmate because the game ends.
-        if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false) {
-          if (board[r][s] === "empty") {
-            result[r + ',' + s] = 'highlighted';
-          } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-            result[r + ',' + s] = 'capture';
-          }
-        }
-      }
+      this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row - 1, square, result);
 
       // down
-      r = row + 1;
-      s = square;
-      if (r < 8) {
-        if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false) {
-          if (board[r][s] === "empty") {
-            result[r + ',' + s] = 'highlighted';
-          } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-            result[r + ',' + s] = 'capture';
-          }
-        }
-      }
+      this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row + 1, square, result);
 
       // left
-      r = row;
-      s = square - 1;
-      if (s >= 0) {
-        if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false) {
-          if (board[r][s] === "empty") {
-            result[r + ',' + s] = 'highlighted';
-          } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-            result[r + ',' + s] = 'capture';
-          }
-        }
-      }
+      this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row, square - 1, result);
 
       // right
-      r = row;
-      s = square + 1;
-      if (s < 8) {
-        if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false) {
-          if (board[r][s] === "empty") {
-            result[r + ',' + s] = 'highlighted';
-          } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-            result[r + ',' + s] = 'capture';
-          }
-        }
-      }
+      this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row, square + 1, result);
 
       // up/left diagonal
-      r = row - 1;
-      s = square - 1;
-      if (r >= 0 && s >= 0) {
-        if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false) {
-          if (board[r][s] === "empty") {
-            result[r + ',' + s] = 'highlighted';
-          } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-            result[r + ',' + s] = 'capture';
-          }
-        }
-      }
+      this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row - 1, square - 1, result);
 
       // up/right diagonal
-      r = row - 1;
-      s = square + 1;
-      if (r >= 0 && s < 8) {
-        if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false) {
-          if (board[r][s] === "empty") {
-            result[r + ',' + s] = 'highlighted';
-          } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-            result[r + ',' + s] = 'capture';
-          }
-        }
-      }
+      this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row - 1, square + 1, result);
 
       // down/left diagonal
-      r = row + 1;
-      s = square - 1;
-      if (r < 8 && s >= 0) {
-        if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false) {
-          if (board[r][s] === "empty") {
-            result[r + ',' + s] = 'highlighted';
-          } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-            result[r + ',' + s] = 'capture';
-          }
-        }
-      }
+      this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row + 1, square - 1, result);
 
       // down/right diagonal
-      r = row + 1;
-      s = square + 1;
-      if (r < 8 && s < 8) {
-        if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false) {
-          if (board[r][s] === "empty") {
-            result[r + ',' + s] = 'highlighted';
-          } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
-            result[r + ',' + s] = 'capture';
-          }
-        }
-      }
+      this.addSquareHighlighting(board, king, piece, pieces, opponentPieces, row + 1, square + 1, result);
       if (!piece.moved) {
-        r = row;
-        s = square;
         // left castle
-        if (this.validLeftCastle(piece, pieces, board, r, s)) {
-          result[r + ',' + (s - 4)] = 'castle';
+        if (this.validLeftCastle(piece, pieces, board, row, square)) {
+          result[row + ',' + (square - 4)] = 'castle';
         }
 
         // right castle
-        if (this.validRightCastle(piece, pieces, board, r, s)) {
-          result[r + ',' + (s + 3)] = 'castle';
+        if (this.validRightCastle(piece, pieces, board, row, square)) {
+          result[row + ',' + (square + 3)] = 'castle';
         }
       }
       return result;
@@ -6056,6 +5974,20 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         }
       }
       return result;
+    },
+    addSquareHighlighting: function addSquareHighlighting(board, king, piece, pieces, opponentPieces, r, s, result) {
+      // Check if r/s coordinates are within the board
+      if (r >= 0 && r < 8 && s >= 0 && s < 8) {
+        // If king is set, check if the move in question would result in the king being targeted. Otherwise, equate to true so that the checkmate logic is ignored.
+        // We can ignore it because if you can make a move on your turn to capture the opponent's king, you don't need to worry about putting yourself in check or checkmate because the game ends.
+        if (!king ? true : this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false) {
+          if (board[r][s] === "empty") {
+            result[r + ',' + s] = 'highlighted';
+          } else if (this.getPiece(board, pieces, r, s).color !== piece.color) {
+            result[r + ',' + s] = 'capture';
+          }
+        }
+      }
     },
     /**
      * Called by the validMove functions for the specific pieces.
@@ -41270,7 +41202,7 @@ Vue.compile = compileToFunctions;
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"_from":"axios@^0.21","_id":"axios@0.21.4","_inBundle":false,"_integrity":"sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==","_location":"/axios","_phantomChildren":{},"_requested":{"type":"range","registry":true,"raw":"axios@^0.21","name":"axios","escapedName":"axios","rawSpec":"^0.21","saveSpec":null,"fetchSpec":"^0.21"},"_requiredBy":["#DEV:/"],"_resolved":"https://registry.npmjs.org/axios/-/axios-0.21.4.tgz","_shasum":"c67b90dc0568e5c1cf2b0b858c43ba28e2eda575","_spec":"axios@^0.21","_where":"C:\\\\Users\\\\frede\\\\Desktop\\\\website-design\\\\chess-laravel","author":{"name":"Matt Zabriskie"},"browser":{"./lib/adapters/http.js":"./lib/adapters/xhr.js"},"bugs":{"url":"https://github.com/axios/axios/issues"},"bundleDependencies":false,"bundlesize":[{"path":"./dist/axios.min.js","threshold":"5kB"}],"dependencies":{"follow-redirects":"^1.14.0"},"deprecated":false,"description":"Promise based HTTP client for the browser and node.js","devDependencies":{"coveralls":"^3.0.0","es6-promise":"^4.2.4","grunt":"^1.3.0","grunt-banner":"^0.6.0","grunt-cli":"^1.2.0","grunt-contrib-clean":"^1.1.0","grunt-contrib-watch":"^1.0.0","grunt-eslint":"^23.0.0","grunt-karma":"^4.0.0","grunt-mocha-test":"^0.13.3","grunt-ts":"^6.0.0-beta.19","grunt-webpack":"^4.0.2","istanbul-instrumenter-loader":"^1.0.0","jasmine-core":"^2.4.1","karma":"^6.3.2","karma-chrome-launcher":"^3.1.0","karma-firefox-launcher":"^2.1.0","karma-jasmine":"^1.1.1","karma-jasmine-ajax":"^0.1.13","karma-safari-launcher":"^1.0.0","karma-sauce-launcher":"^4.3.6","karma-sinon":"^1.0.5","karma-sourcemap-loader":"^0.3.8","karma-webpack":"^4.0.2","load-grunt-tasks":"^3.5.2","minimist":"^1.2.0","mocha":"^8.2.1","sinon":"^4.5.0","terser-webpack-plugin":"^4.2.3","typescript":"^4.0.5","url-search-params":"^0.10.0","webpack":"^4.44.2","webpack-dev-server":"^3.11.0"},"homepage":"https://axios-http.com","jsdelivr":"dist/axios.min.js","keywords":["xhr","http","ajax","promise","node"],"license":"MIT","main":"index.js","name":"axios","repository":{"type":"git","url":"git+https://github.com/axios/axios.git"},"scripts":{"build":"NODE_ENV=production grunt build","coveralls":"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","examples":"node ./examples/server.js","fix":"eslint --fix lib/**/*.js","postversion":"git push && git push --tags","preversion":"npm test","start":"node ./sandbox/server.js","test":"grunt test","version":"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json"},"typings":"./index.d.ts","unpkg":"dist/axios.min.js","version":"0.21.4"}');
+module.exports = JSON.parse('{"_from":"axios@^0.21","_id":"axios@0.21.4","_inBundle":false,"_integrity":"sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==","_location":"/axios","_phantomChildren":{},"_requested":{"type":"range","registry":true,"raw":"axios@^0.21","name":"axios","escapedName":"axios","rawSpec":"^0.21","saveSpec":null,"fetchSpec":"^0.21"},"_requiredBy":["#DEV:/","#USER"],"_resolved":"https://registry.npmjs.org/axios/-/axios-0.21.4.tgz","_shasum":"c67b90dc0568e5c1cf2b0b858c43ba28e2eda575","_spec":"axios@^0.21","_where":"C:\\\\Users\\\\frede\\\\Desktop\\\\website-design\\\\chess-laravel","author":{"name":"Matt Zabriskie"},"browser":{"./lib/adapters/http.js":"./lib/adapters/xhr.js"},"bugs":{"url":"https://github.com/axios/axios/issues"},"bundleDependencies":false,"bundlesize":[{"path":"./dist/axios.min.js","threshold":"5kB"}],"dependencies":{"follow-redirects":"^1.14.0"},"deprecated":false,"description":"Promise based HTTP client for the browser and node.js","devDependencies":{"coveralls":"^3.0.0","es6-promise":"^4.2.4","grunt":"^1.3.0","grunt-banner":"^0.6.0","grunt-cli":"^1.2.0","grunt-contrib-clean":"^1.1.0","grunt-contrib-watch":"^1.0.0","grunt-eslint":"^23.0.0","grunt-karma":"^4.0.0","grunt-mocha-test":"^0.13.3","grunt-ts":"^6.0.0-beta.19","grunt-webpack":"^4.0.2","istanbul-instrumenter-loader":"^1.0.0","jasmine-core":"^2.4.1","karma":"^6.3.2","karma-chrome-launcher":"^3.1.0","karma-firefox-launcher":"^2.1.0","karma-jasmine":"^1.1.1","karma-jasmine-ajax":"^0.1.13","karma-safari-launcher":"^1.0.0","karma-sauce-launcher":"^4.3.6","karma-sinon":"^1.0.5","karma-sourcemap-loader":"^0.3.8","karma-webpack":"^4.0.2","load-grunt-tasks":"^3.5.2","minimist":"^1.2.0","mocha":"^8.2.1","sinon":"^4.5.0","terser-webpack-plugin":"^4.2.3","typescript":"^4.0.5","url-search-params":"^0.10.0","webpack":"^4.44.2","webpack-dev-server":"^3.11.0"},"homepage":"https://axios-http.com","jsdelivr":"dist/axios.min.js","keywords":["xhr","http","ajax","promise","node"],"license":"MIT","main":"index.js","name":"axios","repository":{"type":"git","url":"git+https://github.com/axios/axios.git"},"scripts":{"build":"NODE_ENV=production grunt build","coveralls":"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","examples":"node ./examples/server.js","fix":"eslint --fix lib/**/*.js","postversion":"git push && git push --tags","preversion":"npm test","start":"node ./sandbox/server.js","test":"grunt test","version":"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json"},"typings":"./index.d.ts","unpkg":"dist/axios.min.js","version":"0.21.4"}');
 
 /***/ })
 
