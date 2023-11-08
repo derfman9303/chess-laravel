@@ -109,6 +109,7 @@
                 ],
                 pieces: [],
                 selectedPiece: null,
+                turn: true,
 
                 // blackCaptured: null,
                 // whiteCaptured: null,
@@ -120,13 +121,45 @@
                 // Starting from the clicked element
                 let currentElement = event.target;
 
-                // Continue traversing up the DOM tree until a parent with the desired class is found
+                // Continue traversing up the DOM tree until a parent with the 'square' class is found
                 while (currentElement && !currentElement.classList.contains('square')) {
                     currentElement = currentElement.parentElement;
                 }
 
+                // If the user clicked on a square (or the svg/path of the piece inside the square), otherwise do nothing
                 if (currentElement && currentElement.classList.contains('square')) {
-                    console.log(currentElement);
+
+                    let r = currentElement.getAttribute('data-r');
+                    let s = currentElement.getAttribute('data-s');
+
+                    if (this.selectedPiece !== null) {
+                        console.log("Piece is not null");
+
+                        this.selectedPiece = null;
+                        this.removeHighlighting();
+                    } else if (this.selectPiece(r, s)) {
+                        console.log("selectPiece() returned true");
+
+                        if (this.getSelectedPiece().color === 'white' && this.getTurn() === 'white') {
+                            let totalValidPieces = this.getValidPieces(this.board, this.pieces, this.turn);
+                            let opponentPieces   = totalValidPieces[1];
+                            let king             = totalValidPieces[2];
+                            let validMoves       = this.getValidMoves(this.board, this.getSelectedPiece(), this.pieces, r, s, king, opponentPieces);
+
+                            if (Object.keys(validMoves).length > 0) {
+                                Object.keys(validMoves).forEach(key => {
+                                    let vr = key.split(',')[0];
+                                    let vs = key.split(',')[1];
+            
+                                    this.grid[vr][vs].classList.add(validMoves[key]);
+                                });
+                            } else {
+                                this.selectedPiece = null;
+                            }
+                        } else {
+                            this.selectedPiece = null;
+                        }
+                    }
                 }
             },
         },
@@ -139,6 +172,7 @@
             this.squares = document.getElementsByClassName('square');
 
             this.defineGridArray();
+            this.indexPieces();
             this.paintBoard();
             this.loadBoard();
             this.reloadGrid();
@@ -154,12 +188,12 @@
         padding: 0;
     }
 
-    .square.light {
+    .light {
         background-color: #b5b4b3;
         border: 1px solid #b5b4b3;
     }
 
-    .square.dark {
+    .dark {
         background-color: #70706f;
         border: 1px solid #70706f;
     }
@@ -168,6 +202,21 @@
         height: 100%;
         width: 100%;
         padding: 7.5px;
+    }
+
+    .highlighted {
+        background-color: #e3d756;
+        border: 1px solid #c2b849;
+    }
+
+    .capture {
+        background-color: #e64949;
+        border: 1px solid #e64949;
+    }
+
+    .castle {
+        background-color: #4cb2e6;
+        border: 1px solid #4cb2e6;
     }
 
     @media screen and (max-width: 769px) {
