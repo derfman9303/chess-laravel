@@ -17,6 +17,8 @@ Route::get('/', function () {
     return view('index');
 });
 
+Route::post('/get-move', 'App\Http\Controllers\MoveController@getMove');
+
 Route::get('/test-database', function () {
     try {
         DB::connection()->getPdo();

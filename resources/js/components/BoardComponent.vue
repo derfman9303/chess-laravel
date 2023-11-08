@@ -137,14 +137,38 @@
                         if (this.grid[r][s].classList.contains("highlighted") || this.grid[r][s].classList.contains("capture")) {
                             this.movePiece(r, s);
                             this.reloadGrid();
-                            // this.switchTurns();
+                            this.switchTurns();
                         } else if (this.grid[r][s].classList.contains("castle")) {
                             this.castle(r, s);
-                            // this.switchTurns();
+                            this.switchTurns();
                         }
 
                         this.selectedPiece = null;
                         this.removeHighlighting();
+
+                        // AI makes move
+                        if (!this.turn) {
+                            const move   = this.getMove(this.board, this.pieces, this.turn, 3);
+                            const index  = parseInt(move[0]);
+                            const row    = parseInt(move[1]);
+                            const square = parseInt(move[2]);
+
+                            if (move !== false) {
+                                // Wait 1 second before moving piece on the screen, to make it feel more natural
+                                setTimeout(function() {
+                                    if (this.validCastle(this.pieces[this.board[0][4]], this.pieces, this.board, row, square)) {
+                                        this.castle(row, square, this.board[0][4], this.board, this.pieces);
+                                    } else {
+                                        this.movePiece(row, square, this.pieces[index], this.pieces, index, this.board);
+                                    }
+
+                                    this.switchTurns();
+                                    this.reloadGrid();
+                                }, 1000);
+                            } else {
+                                // Checkmate by white? Stalemate?
+                            }
+                        }
                     } else if (this.selectPiece(r, s)) {
                         console.log("selectPiece() returned true");
 

@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 export default {
     methods: {
         getIcon(piece, color) {
@@ -1225,6 +1227,31 @@ export default {
                     square.setAttribute('data-s', s);
                 });
             });
+        },
+
+        /**
+         * Makes the request to the backend, where the AI will take the board state you pass to it and return an updated board state with the move it wants to make
+         * @param {*} board 
+         * @param {*} pieces 
+         * @param {*} turn 
+         * @param {*} steps 
+         */
+        async getMove(board, pieces, turn, steps) {
+            console.log(board);
+            const data = {
+                board: board,
+                pieces: pieces,
+                turn: turn,
+                steps: steps,
+            };
+
+            await axios.post('/get-move', data)
+                .then(response => {
+                    console.log(response.data);
+                })
+                .catch(error => {
+                    console.error(error);
+                });
         },
     }
 }
