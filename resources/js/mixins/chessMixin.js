@@ -599,7 +599,7 @@ export default {
     
         knightValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {
             let result = {};
-    
+
             // up 1
             let r = row - 2;
             let s = square - 1;

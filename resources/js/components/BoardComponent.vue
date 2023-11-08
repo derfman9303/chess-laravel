@@ -129,8 +129,8 @@
                 // If the user clicked on a square (or the svg/path of the piece inside the square), otherwise do nothing
                 if (currentElement && currentElement.classList.contains('square')) {
 
-                    let r = currentElement.getAttribute('data-r');
-                    let s = currentElement.getAttribute('data-s');
+                    let r = parseInt(currentElement.getAttribute('data-r'));
+                    let s = parseInt(currentElement.getAttribute('data-s'));
 
                     if (this.selectedPiece !== null) {
                         console.log("Piece is not null");

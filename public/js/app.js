@@ -5197,8 +5197,8 @@ __webpack_require__.r(__webpack_exports__);
 
       // If the user clicked on a square (or the svg/path of the piece inside the square), otherwise do nothing
       if (currentElement && currentElement.classList.contains('square')) {
-        var r = currentElement.getAttribute('data-r');
-        var s = currentElement.getAttribute('data-s');
+        var r = parseInt(currentElement.getAttribute('data-r'));
+        var s = parseInt(currentElement.getAttribute('data-s'));
         if (this.selectedPiece !== null) {
           console.log("Piece is not null");
           this.selectedPiece = null;
