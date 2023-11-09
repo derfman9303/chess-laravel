@@ -1,3 +1,9 @@
+
+/**
+ * I created this mixin to put most of the UI logic inside of, instead of directly in BoardComponent.vue just in case I end up needing them elsewhere.
+ * I don't know exactly what my future plans for this project are, but I'm trying to build it out in the most expandable way
+ */
+
 import axios from 'axios';
 
 export default {
@@ -376,6 +382,7 @@ export default {
             let r = row;
             let s = square;
 
+            // Check if r/s coordinates are still within the board
             while (r >= 0 && r < 8 && s >= 0 && s < 8) {
                 if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
                     if (board[r][s] === "empty") {
