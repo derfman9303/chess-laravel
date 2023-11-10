@@ -5234,8 +5234,6 @@ __webpack_require__.r(__webpack_exports__);
           }
         } else if (this.selectPiece(r, s)) {
           console.log("selectPiece() returned true");
-          console.log(this.board);
-          console.log(this.pieces);
           if (this.getSelectedPiece().color === 'white' && this.getTurn() === 'white') {
             var totalValidPieces = this.getValidPieces(this.board, this.pieces, this.turn);
             var opponentPieces = totalValidPieces[1];
@@ -6079,13 +6077,13 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
-              console.log(board);
               data = {
                 board: board,
                 pieces: pieces,
                 turn: turn,
                 steps: steps
               };
+              console.log(data);
               _context.next = 4;
               return axios__WEBPACK_IMPORTED_MODULE_0___default().post('/get-move', data).then(function (response) {
                 console.log(response.data);

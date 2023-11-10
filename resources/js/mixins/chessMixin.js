@@ -876,13 +876,14 @@ export default {
          * @param {*} steps 
          */
         async getMove(board, pieces, turn, steps) {
-            console.log(board);
             const data = {
                 board: board,
                 pieces: pieces,
                 turn: turn,
                 steps: steps,
             };
+
+            console.log(data);
 
             await axios.post('/get-move', data)
                 .then(response => {
