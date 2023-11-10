@@ -5,10 +5,21 @@ namespace App\Services;
 class MoveService
 {
     public function getValidPieces($board, $pieces, $turn) {
-        $myPieces = [];
+        $myPieces       = [];
         $opponentPieces = [];
+        $myKing         = null;
+        $opponentKing   = null;
 
         foreach ($pieces as $index => $piece) {
+            // Find the kings to be used by checkmate logic
+            if ($piece['type'] == 'king') {
+                if ($piece['color'] == $this->getTurn($turn)) {
+                    $myKing = $piece;
+                } else {
+                    $opponentKing = $piece;
+                }
+            }
+
             if (!$piece['captured'] && !empty($this->getValidMoves($board, $piece, $pieces, $piece['row'], $piece['square']))) {
                 if ($piece['color'] == $this->getTurn($turn)) {
                     $myPieces[] = $index;
@@ -18,7 +29,7 @@ class MoveService
             }
         }
 
-        return [$myPieces, $opponentPieces];
+        return [$myPieces, $opponentPieces, $myKing, $opponentKing];
     }
 
     protected function getValidMoves($board, $piece, $pieces, $row, $square, $king = false, $opponentPieces = []) {
