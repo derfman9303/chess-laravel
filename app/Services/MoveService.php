@@ -5,7 +5,10 @@ namespace App\Services;
 class MoveService
 {
     public function __construct($board, $pieces, $turn, $steps) {
-
+        $this->board  = $board;
+        $this->pieces = $pieces;
+        $this->turn   = $turn;
+        $this->steps  = $steps;
     }
 
     public function getValidPieces($board, $pieces, $turn) {
