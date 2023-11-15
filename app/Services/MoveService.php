@@ -4,6 +4,10 @@ namespace App\Services;
 
 class MoveService
 {
+    public function __construct($board, $pieces, $turn, $steps) {
+
+    }
+
     public function getValidPieces($board, $pieces, $turn) {
         $myPieces       = [];
         $opponentPieces = [];
@@ -13,7 +17,7 @@ class MoveService
         foreach ($pieces as $index => $piece) {
             // Find the kings to be used by checkmate logic
             if ($piece['type'] == 'king') {
-                if ($piece['color'] == $this->getTurn($turn)) {
+                if ($piece['color'] == $this->getTurnColor($turn)) {
                     $myKing = $piece;
                 } else {
                     $opponentKing = $piece;
@@ -21,7 +25,7 @@ class MoveService
             }
 
             if (!$piece['captured'] && !empty($this->getValidMoves($board, $piece, $pieces, $piece['row'], $piece['square']))) {
-                if ($piece['color'] == $this->getTurn($turn)) {
+                if ($piece['color'] == $this->getTurnColor($turn)) {
                     $myPieces[] = $index;
                 } else {
                     $opponentPieces[] = $index;
@@ -32,7 +36,7 @@ class MoveService
         return [$myPieces, $opponentPieces, $myKing, $opponentKing];
     }
 
-    protected function getValidMoves($board, $piece, $pieces, $row, $square, $king = false, $opponentPieces = []) {
+    function getValidMoves($board, $piece, $pieces, $row, $square, $king = false, $opponentPieces = []) {
         $result = [];
 
         switch ($piece['type']) {
@@ -336,7 +340,7 @@ class MoveService
      * @param {*} turn 
      * @returns 
      */
-    function getTurn($turn) {
+    function getTurnColor($turn) {
         $result = "black";
 
         if (is_string($turn)) {
@@ -412,23 +416,23 @@ class MoveService
      */
     function doesMoveCauseCheck($board, $king, $piece, $pieces, $opponentPieces, $r, $s) {
         $result    = false;
-        $oldRow    = $piece->row;
-        $oldSquare = $piece->square;
+        $oldRow    = $piece['row'];
+        $oldSquare = $piece['square'];
 
-        if ($board[$r][$s] == "empty" || $this->getPiece($board, $pieces, $r, $s)->color != $piece->color) {
+        if ($board[$r][$s] == "empty" || $this->getPiece($board, $pieces, $r, $s)['color'] != $piece['color']) {
             if ($board[$r][$s] != 'castle') {
 
                 // Move piece temporarily
-                $captured = $this->capturePiece($r, $s, $board, $pieces, $king->color);
-                $moved    = $piece->moved;
-                $this->movePiece($r, $s, $piece, $pieces, $piece->index, $board);
+                $captured = $this->capturePiece($r, $s, $board, $pieces, $king['color']);
+                $moved = $piece['moved'];
+                $this->movePiece($r, $s, $piece, $pieces, $piece['index'], $board);
     
                 // Determine if king is targeted in new board state
                 $result = $this->kingTargeted($board, $king, $pieces, $opponentPieces);
     
                 // Move piece back to original position, and un-capture the piece if one was captured in the previous temporary move
-                $this->movePiece($oldRow, $oldSquare, $piece, $pieces, $piece->index, $board);
-                $piece->moved = $moved;
+                $this->movePiece($oldRow, $oldSquare, $piece, $pieces, $piece['index'], $board);
+                $piece['moved'] = $moved;
     
                 // If a piece was captured, un-capture it
                 $this->unCapturePiece($captured, ['row' => $r, 'square' => $s], $board, $pieces);
@@ -444,7 +448,7 @@ class MoveService
         $result = false;
 
         // If piece exists on row/square, and belongs to the opposite turn
-        if ($board[$row][$square] != 'empty' && $this->getPiece($board, $pieces, $row, $square)->color != $this->getTurn(turn)) {
+        if ($board[$row][$square] != 'empty' && $this->getPiece($board, $pieces, $row, $square)->color != $this->getTurnColor($turn)) {
             $result = $board[$row][$square];
 
             $this->getPiece($board, $pieces, $row, $square)->captured = true;
@@ -467,7 +471,7 @@ class MoveService
         }
     }
 
-    function movePiece($row, $square, &$piece, $pieces, $index, &$board) {
+    function movePiece($row, $square, &$piece, &$pieces, $index, &$board) {
         // Check if capture
         if ($board[$row][$square] != 'empty') {
             $capturedPiece           = $this->getPiece($board, $pieces, $row, $square);
@@ -478,14 +482,55 @@ class MoveService
 
         // Move piece on board
         $board[$row][$square] = $index;
-        if ($piece->row >= 0 && $piece->square >= 0) {
+        if ($piece['row'] >= 0 && $piece['square'] >= 0) {
             // Only vacate the square if the piece is currently on one
-            $board[$piece->row][$piece->square] = 'empty';
+            $board[$piece['row']][$piece['square']] = 'empty';
         }
 
         // Update piece's coords
-        $piece->row    = $row;
-        $piece->square = $square;
-        $piece->moved  = true;
+        $piece['row']    = $row;
+        $piece['square'] = $square;
+        $piece['moved']  = true;
+
+        // Update the pieces array
+        $pieces[$piece['index']]['row']    = $row;
+        $pieces[$piece['index']]['square'] = $square;
+        $pieces[$piece['index']]['moved']  = true;
+    }
+
+    /**
+     * Returns true if the opponent has a piece currently targeting your king (king is in check)
+     * 
+     * @param {*} king 
+     * @param {*} opponentPieces 
+     * @param {*} r 
+     * @param {*} s 
+     * @returns
+     */
+    function kingTargeted($board, $king, $pieces, $opponentPieces) {
+        if (count($opponentPieces) > 0) {
+            // for (let v = 0; v < opponentPieces.length; v++) {
+            foreach ($opponentPieces as $opponentPiece) {
+                if (!$opponentPiece['captured']) {
+                    $validMoves    = $this->getValidMoves($board, $opponentPiece, $pieces, $opponentPiece['row'], $opponentPiece['square']);
+                    $validMoveKeys = array_keys($validMoves);
+    
+                    // for (let m = 0; m < validMoveKeys.length; m++) {
+                    foreach ($validMoveKeys as $m) {
+                        if ($validMoves[$m] == 'capture') {
+                            $splitKey = explode(',', $m);
+                            $row      = intval($splitKey[0]);
+                            $square   = intval($splitKey[1]);
+    
+                            if ($row == $king['row'] && $square == $king['square']) {
+                                return true;
+                            }
+                        }
+                    } 
+                }               
+            }
+        }
+
+        return false;
     }
 }
