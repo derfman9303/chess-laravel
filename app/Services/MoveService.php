@@ -11,7 +11,25 @@ class MoveService
         $this->steps  = $steps;
     }
 
-    public function getValidPieces($board, $pieces, $turn) {
+    public function getMove() {
+        $totalValidPieces = $this->getValidPieces($this->board, $this->pieces, false);
+        $validPieces      = $totalValidPieces[0];
+        $opponentPieces   = $totalValidPieces[1];
+        $king             = $totalValidPieces[2];
+        $availableMoves   = [];
+
+        if (count($validPieces) > 0) {
+            foreach ($validPieces as $index => $piece) {
+
+            }
+        } else {
+            return false;
+        }
+
+        return $totalValidPieces;
+    }
+
+    protected function getValidPieces($board, $pieces, $turn = false) {
         $myPieces       = [];
         $opponentPieces = [];
         $myKing         = null;
@@ -39,8 +57,7 @@ class MoveService
         return [$myPieces, $opponentPieces, $myKing, $opponentKing];
     }
 
-    function getValidMoves($board, $piece, $pieces, $row, $square, $king = false, $opponentPieces = []) {
-        $result = [];
+    protected function getValidMoves($board, $piece, $pieces, $row, $square, $king = false, $opponentPieces = []) {
 
         switch ($piece['type']) {
             case 'king':
@@ -66,7 +83,7 @@ class MoveService
         return $result;
     }
 
-    function kingValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
+    protected function kingValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
         $result = [];
 
         // up
@@ -108,7 +125,7 @@ class MoveService
         return $result;
     }
 
-    function queenValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
+    protected function queenValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
         $result = [];
 
         // up
@@ -138,7 +155,7 @@ class MoveService
         return $result;
     }
 
-    function rookValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
+    protected function rookValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
         $result = [];
 
         // up
@@ -156,7 +173,7 @@ class MoveService
         return $result;
     }
 
-    function bishopValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
+    protected function bishopValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
         $result = [];
 
         // up/right diagonal
@@ -174,7 +191,7 @@ class MoveService
         return $result;
     }
 
-    function knightValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
+    protected function knightValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
         $result = [];
 
         // up 1
@@ -204,7 +221,7 @@ class MoveService
         return $result;
     }
 
-    function pawnValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
+    protected function pawnValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
         $result = [];
 
         if ($piece['color'] == "white") {
@@ -240,7 +257,7 @@ class MoveService
         return $result;
     }
 
-    function findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $r, $s) {
+    protected function findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $r, $s) {
         $result = [];
 
         // Check if r/s coordinates are within the board
@@ -262,7 +279,7 @@ class MoveService
     /**
      * The same as the above function, except it works for pieces that can move in unobstructed lines
      */
-    function findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $direction) {
+    protected function findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $direction) {
         $result = [];
         $r = $row;
         $s = $square;
@@ -315,7 +332,7 @@ class MoveService
         return $result;
     }
 
-    function findValidMovesPawn($board, $king, $piece, $pieces, $opponentPieces, $r, $s, $capture = false) {
+    protected function findValidMovesPawn($board, $king, $piece, $pieces, $opponentPieces, $r, $s, $capture = false) {
         $result = [];
 
         // Check if r/s coordinates are within the board
@@ -343,7 +360,7 @@ class MoveService
      * @param {*} turn 
      * @returns 
      */
-    function getTurnColor($turn) {
+    protected function getTurnColor($turn) {
         $result = "black";
 
         if (is_string($turn)) {
@@ -357,7 +374,7 @@ class MoveService
         return $result;
     }
 
-    function validLeftCastle($piece, $pieces, $board) {
+    protected function validLeftCastle($piece, $pieces, $board) {
         $r = $piece['row'];
         $s = $piece['square'];
 
@@ -377,7 +394,7 @@ class MoveService
         return false;
     }
 
-    function validRightCastle($piece, $pieces, $board) {
+    protected function validRightCastle($piece, $pieces, $board) {
         $r = $piece['row'];
         $s = $piece['square'];
 
@@ -404,7 +421,7 @@ class MoveService
      * @param {*} square 
      * @returns 
      */
-    function getPiece($board, $pieces, $row, $square) {
+    protected function getPiece($board, $pieces, $row, $square) {
         return $pieces[$board[$row][$square]];
     }
 
@@ -417,7 +434,7 @@ class MoveService
      * @param {*} s 
      * @returns 
      */
-    function doesMoveCauseCheck($board, $king, $piece, $pieces, $opponentPieces, $r, $s) {
+    protected function doesMoveCauseCheck($board, $king, $piece, $pieces, $opponentPieces, $r, $s) {
         $result    = false;
         $oldRow    = $piece['row'];
         $oldSquare = $piece['square'];
@@ -447,7 +464,7 @@ class MoveService
         return $result;
     }
 
-    function capturePiece($row, $square, $board, $pieces, $turn) {
+    protected function capturePiece($row, $square, $board, $pieces, $turn) {
         $result = false;
 
         // If piece exists on row/square, and belongs to the opposite turn
@@ -462,7 +479,7 @@ class MoveService
         return $result;
     }
 
-    function unCapturePiece($captured, $newData, $board, $pieces) {
+    protected function unCapturePiece($captured, $newData, $board, $pieces) {
         if ($captured != false) {
             $piece   = $pieces[$captured];
             $moved = $piece->moved;
@@ -474,7 +491,7 @@ class MoveService
         }
     }
 
-    function movePiece($row, $square, &$piece, &$pieces, $index, &$board) {
+    protected function movePiece($row, $square, &$piece, &$pieces, $index, &$board) {
         // Check if capture
         if ($board[$row][$square] != 'empty') {
             $capturedPiece           = $this->getPiece($board, $pieces, $row, $square);
@@ -510,7 +527,7 @@ class MoveService
      * @param {*} s 
      * @returns
      */
-    function kingTargeted($board, $king, $pieces, $opponentPieces) {
+    protected function kingTargeted($board, $king, $pieces, $opponentPieces) {
         if (count($opponentPieces) > 0) {
             // for (let v = 0; v < opponentPieces.length; v++) {
             foreach ($opponentPieces as $opponentPiece) {
