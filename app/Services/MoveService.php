@@ -5,28 +5,279 @@ namespace App\Services;
 class MoveService
 {
     public function __construct($board, $pieces, $turn, $steps) {
-        $this->board  = $board;
-        $this->pieces = $pieces;
-        $this->turn   = $turn;
-        $this->steps  = $steps;
+        $this->board     = $board;
+        $this->pieces    = $pieces;
+        $this->turn      = $turn;
+        $this->steps     = $steps;
+        $this->kingVal   = 900;
+        $this->queenVal  = 90;
+        $this->rookVal   = 50; 
+        $this->bishopVal = 30;
+        $this->knightVal = 30;
+        $this->pawnVal   = 10;
     }
 
-    public function getMove() {
-        $totalValidPieces = $this->getValidPieces($this->board, $this->pieces, false);
+    public function getMove($board, $pieces, $turn, $steps) {
+        $totalValidPieces = $this->getValidPieces($board, $pieces, false);
         $validPieces      = $totalValidPieces[0];
         $opponentPieces   = $totalValidPieces[1];
         $king             = $totalValidPieces[2];
         $availableMoves   = [];
 
         if (count($validPieces) > 0) {
-            foreach ($validPieces as $index => $piece) {
+            foreach ($validPieces as $validPieceIndex) {
+                $piece      = $pieces[$validPieceIndex];
+                $oldRow     = $piece['row'];
+                $oldSquare  = $piece['square'];
+                $validMoves = $this->getValidMoves($board, $piece, $pieces, $oldRow, $oldSquare, $king, $opponentPieces);
+                $moveKeys   = array_keys($validMoves);
 
+                foreach ($moveKeys as $moveKey) {
+                    $newData = $this->getNewData($moveKey);
+
+                    if ($validMoves[$moveKey] != 'castle') {
+                        // Move piece temporarily
+                        $captured = $this->capturePiece($newData['row'], $newData['square'], $board, $pieces, $turn);
+                        $moved    = $piece['moved'];
+                        $this->movePiece($newData['row'], $newData['square'], $piece, $pieces, $validPieceIndex, $board);
+
+                        // Get value of updated board, save to availableMoves
+                        $availableMoves[$oldRow . ',' . $oldSquare . ',' . $newData['row'] . ',' . $newData['square']] = $this->maxi($board, $pieces, $steps);
+
+                        // Move piece back to original position, and un-capture the piece if one was captured in the previous temporary move
+                        $this->movePiece($oldRow, $oldSquare, $piece, $pieces, $validPieceIndex, $board);
+                        $piece['moved'] = $moved;
+
+                        // If a piece was captured, un-capture it
+                        $this->unCapturePiece($captured, $newData, $board, $pieces);
+                    } else {
+                        $rook          = $pieces[$board[$newData['row']][$newData['square']]];
+                        $rookOldRow    = $rook['row'];
+                        $rookOldSquare = $rook['square'];
+
+                        // Castle temporarily
+                        $this->castle($newData['row'], $newData['square'], $validPieceIndex, $board, $pieces, true);
+
+                        $availableMoves[$oldRow . ',' . $oldSquare . ',' . $newData['row'] . ',' . $newData['square']] = $this->maxi($board, $pieces, $steps);
+
+                        // Un-castle
+                        $this->unCastle($piece, $rook, $rookOldRow, $rookOldSquare, $oldRow, $oldSquare, $board, $pieces);
+
+                    }
+                }
             }
         } else {
             return false;
         }
 
-        return $totalValidPieces;
+        $min = min($availableMoves);
+        $preferredMoves = [];
+
+        foreach ($availableMoves as $index => $move) {
+            if ($move == $min) {
+                $preferredMoves[$index] = $move;
+            }
+        }
+
+        $preferredMoveKeys = array_keys($preferredMoves);
+
+        if (count($preferredMoveKeys) > 0) {
+            $randomIndex  = floor(rand(0, count($preferredMoveKeys) - 1));
+            $selectedMove = explode(',', $preferredMoveKeys[$randomIndex]);
+            
+            return [$board[$selectedMove[0]][$selectedMove[1]], $selectedMove[2], $selectedMove[3]];
+        } else {
+            return false;
+        }
+    }
+
+    protected function mini($board, $pieces, $steps) {
+        if ($steps == 0) {
+            // if ($this->getBoardValue($pieces) != 0) {
+            //     echo "Does not equal 0";
+            //     exit;
+            // }
+            return $this->getBoardValue($pieces);
+        } else {
+            $totalValidPieces = $this->getValidPieces($board, $pieces, false);
+            $validPieces      = $totalValidPieces[0];
+            $opponentPieces   = $totalValidPieces[1];
+            $king             = $totalValidPieces[2]; 
+            $min              = INF;
+
+            if (count($validPieces) > 0) {
+                foreach ($validPieces as $validPieceIndex) {
+                    $piece      = $pieces[$validPieceIndex];
+                    $oldRow     = $piece['row'];
+                    $oldSquare  = $piece['square'];
+                    $validMoves = $this->getValidMoves($board, $piece, $pieces, $oldRow, $oldSquare, $king, $opponentPieces);
+                    $moveKeys   = array_keys($validMoves);
+    
+                    foreach ($moveKeys as $moveKey) {
+                        $newData = $this->getNewData($moveKey);
+    
+                        if ($validMoves[$moveKey] != 'castle') {
+
+                            // Move piece temporarily
+                            $captured = $this->capturePiece($newData['row'], $newData['square'], $board, $pieces, false);
+                            $moved    = $piece['moved'];
+                            $this->movePiece($newData['row'], $newData['square'], $piece, $pieces, $validPieceIndex, $board);
+    
+                            // Get value of updated board, save to availableMoves
+                            $score = $this->maxi($board, $pieces, $steps - 1);
+
+                            if ($score < $min) {
+                                $min = $score;
+                            }
+    
+                            // Move piece back to original position, and un-capture the piece if one was captured in the previous temporary move
+                            $this->movePiece($oldRow, $oldSquare, $piece, $pieces, $validPieceIndex, $board);
+                            $piece['moved'] = $moved;
+        
+                            // If a piece was captured, un-capture it
+                            $this->unCapturePiece($captured, $newData, $board, $pieces);
+                        } else {
+                            $rook          = $pieces[$board[$newData['row']][$newData['square']]];
+                            $rookOldRow    = $rook['row'];
+                            $rookOldSquare = $rook['square'];
+        
+                            // Castle temporarily
+                            $this->castle($newData['row'], $newData['square'], $validPieceIndex, $board, $pieces, true);
+    
+                            $score = $this->maxi($board, $pieces, $steps - 1);
+
+                            if ($score < $min) {
+                                $min = $score;
+                            }
+    
+                            // Un-castle
+                            $this->unCastle($piece, $rook, $rookOldRow, $rookOldSquare, $oldRow, $oldSquare, $board, $pieces);
+                        }
+                    }
+                }
+
+                return $min;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    protected function maxi($board, $pieces, $steps) {
+        if ($steps == 0) {
+            // if ($this->getBoardValue($pieces) != 0) {
+            //     echo "Does not equal 0";
+            //     exit;
+            // }
+            return $this->getBoardValue($pieces);
+        } else {
+            $totalValidPieces = $this->getValidPieces($board, $pieces, true);
+            $validPieces      = $totalValidPieces[0];
+            $max              = -INF;
+
+            if (count($validPieces) > 0) {
+                foreach ($validPieces as $validPieceIndex) {
+                    $piece      = $pieces[$validPieceIndex];
+                    $oldRow     = $piece['row'];
+                    $oldSquare  = $piece['square'];
+                    $validMoves = $this->getValidMoves($board, $piece, $pieces, $oldRow, $oldSquare);
+                    $moveKeys   = array_keys($validMoves);
+    
+                    foreach ($moveKeys as $moveKey) {
+                        $newData = $this->getNewData($moveKey);
+    
+                        if ($validMoves[$moveKey] != 'castle') {
+    
+                            // Move piece temporarily
+                            $captured = $this->capturePiece($newData['row'], $newData['square'], $board, $pieces, true);
+                            $moved    = $piece['moved'];
+                            $this->movePiece($newData['row'], $newData['square'], $piece, $pieces, $validPieceIndex, $board);
+    
+                            // Get value of updated board, save to availableMoves
+                            $score = $this->mini($board, $pieces, $steps - 1);
+
+                            if ($score > $max) {
+                                $max = $score;
+                            }
+    
+                            // Move piece back to original position, and un-capture the piece if one was captured in the previous temporary move
+                            $this->movePiece($oldRow, $oldSquare, $piece, $pieces, $validPieceIndex, $board);
+                            $piece['moved'] = $moved;
+    
+                            // If a piece was captured, un-capture it
+                            $this->unCapturePiece($captured, $newData, $board, $pieces);
+                        } else {
+                            $rook          = $pieces[$board[$newData['row']][$newData['square']]];
+                            $rookOldRow    = $rook['row'];
+                            $rookOldSquare = $rook['square'];
+    
+                            // Castle temporarily
+                            $this->castle($newData['row'], $newData['square'], $validPieceIndex, $board, $pieces, true);
+    
+                            $score = $this->mini($board, $pieces, $steps - 1);
+
+                            if ($score > $max) {
+                                $max = $score;
+                            }
+    
+                            // Un-castle
+                            $this->unCastle($piece, $rook, $rookOldRow, $rookOldSquare, $oldRow, $oldSquare, $board, $pieces);
+                        }
+                    }
+                }
+                return $max;
+            } else {
+                return false;
+            }
+        }
+    }
+
+        /**
+     * Adds up the total value of all pieces on the board
+     * @param {*} pieces 
+     * @returns 
+     */
+    protected function getBoardValue($pieces) {
+        $result = 0;
+
+        foreach ($pieces as $piece) {
+            if (!$piece['captured']) {
+                switch ($piece['type']) {
+                    case "king":
+                        $result += $piece['color'] == "white" ? $this->kingVal : -abs($this->kingVal);
+                        break;
+                    case "queen":
+                        $result += $piece['color'] == "white" ? $this->queenVal : -abs($this->queenVal);
+                        break;
+                    case "rook":
+                        $result += $piece['color'] == "white" ? $this->rookVal : -abs($this->rookVal);
+                        break;
+                    case "bishop":
+                        $result += $piece['color'] == "white" ? $this->bishopVal : -abs($this->bishopVal);
+                        break;
+                    case "knight":
+                        $result += $piece['color'] == "white" ? $this->knightVal : -abs($this->knightVal);
+                        break;
+                    case "pawn":
+                        $result += $piece['color'] == "white" ? $this->pawnVal : -abs($this->pawnVal);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    // TODO: Refactor logic to not need this function since it's basically doing nothing
+    protected function getNewData($moveKey) {
+        $validMove = explode(',', $moveKey);
+
+        return [
+            'row' => intval($validMove[0]),
+            'square' => intval($validMove[1]),
+        ];
     }
 
     protected function getValidPieces($board, $pieces, $turn = false) {
@@ -464,30 +715,30 @@ class MoveService
         return $result;
     }
 
-    protected function capturePiece($row, $square, $board, $pieces, $turn) {
+    protected function capturePiece($row, $square, &$board, &$pieces, $turn) {
         $result = false;
 
         // If piece exists on row/square, and belongs to the opposite turn
-        if ($board[$row][$square] != 'empty' && $this->getPiece($board, $pieces, $row, $square)->color != $this->getTurnColor($turn)) {
+        if ($board[$row][$square] != 'empty' && $this->getPiece($board, $pieces, $row, $square)['color'] != $this->getTurnColor($turn)) {
             $result = $board[$row][$square];
 
-            $this->getPiece($board, $pieces, $row, $square)->captured = true;
-            $this->getPiece($board, $pieces, $row, $square)->row      = -1;
-            $this->getPiece($board, $pieces, $row, $square)->square   = -1;
+            $pieces[$result]['captured'] = true;
+            $pieces[$result]['row']      = -1;
+            $pieces[$result]['square']   = -1;
         }
 
         return $result;
     }
 
-    protected function unCapturePiece($captured, $newData, $board, $pieces) {
+    protected function unCapturePiece($captured, $newData, &$board, &$pieces) {
         if ($captured != false) {
-            $piece   = $pieces[$captured];
-            $moved = $piece->moved;
+            $piece = $pieces[$captured];
+            $moved = $piece['moved'];
 
             $this->movePiece($newData['row'], $newData['square'], $piece, $pieces, $captured, $board);
 
-            $pieces[$captured]->moved    = $moved;
-            $pieces[$captured]->captured = false;
+            $pieces[$captured]['moved']    = $moved;
+            $pieces[$captured]['captured'] = false;
         }
     }
 
@@ -495,9 +746,9 @@ class MoveService
         // Check if capture
         if ($board[$row][$square] != 'empty') {
             $capturedPiece           = $this->getPiece($board, $pieces, $row, $square);
-            $capturedPiece->captured = true;
-            $capturedPiece->row      = -1;
-            $capturedPiece->square   = -1;
+            $capturedPiece['captured'] = true;
+            $capturedPiece['row']      = -1;
+            $capturedPiece['square']   = -1;
         }
 
         // Move piece on board
@@ -530,7 +781,9 @@ class MoveService
     protected function kingTargeted($board, $king, $pieces, $opponentPieces) {
         if (count($opponentPieces) > 0) {
             // for (let v = 0; v < opponentPieces.length; v++) {
-            foreach ($opponentPieces as $opponentPiece) {
+            foreach ($opponentPieces as $opponentPieceIndex) {
+                $opponentPiece = $pieces[$opponentPieceIndex];
+
                 if (!$opponentPiece['captured']) {
                     $validMoves    = $this->getValidMoves($board, $opponentPiece, $pieces, $opponentPiece['row'], $opponentPiece['square']);
                     $validMoveKeys = array_keys($validMoves);

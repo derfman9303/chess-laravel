@@ -182,6 +182,14 @@ export default {
                 this.newPiece('pawn', 'black', 1, 5),
                 this.newPiece('pawn', 'black', 1, 6),
                 this.newPiece('pawn', 'black', 1, 7),
+
+
+
+                // this.newPiece('king', 'white', 7, 4),
+                // this.newPiece('queen', 'black', 0, 3),
+                // this.newPiece('queen', 'black', 6, 0),
+                // this.newPiece('queen', 'black', 0, 5),
+                // this.newPiece('pawn', 'white', 6, 7),
             ];
         },
 
@@ -581,7 +589,7 @@ export default {
             }
         },
 
-        castle(row, square, piece = this.selectedPiece, board = this.board, pieces = this.pieces, recursive = false) {
+        castle(row, square, piece, board, pieces) {
 
             // Identify the rook to be castled
             const rookIndex = board[row][square];
@@ -604,9 +612,19 @@ export default {
                 this.movePiece(row, square + 3, pieces[rookIndex], pieces, rookIndex, board);
             }
     
-            if (!recursive) {
-                this.reloadGrid();
+            this.reloadGrid();
+        },
+
+        validCastle(piece, pieces, board, r, s) {
+            let result = false;
+    
+            if (r === 0 && s === 0) {
+                result = this.validLeftCastle(piece, pieces, board, r, s);
+            } else if (r === 0 && s === 7) {
+                result = this.validRightCastle(piece, pieces, board, r, s);
             }
+    
+            return result;
         },
 
         validLeftCastle(piece, pieces, board) {
@@ -875,23 +893,22 @@ export default {
          * @param {*} turn 
          * @param {*} steps 
          */
-        async getMove(board, pieces, turn, steps) {
+        getMove(board, pieces, turn, steps) {
             const data = {
                 board: board,
                 pieces: pieces,
                 turn: turn,
                 steps: steps,
             };
-
-            console.log(data);
-
-            await axios.post('/get-move', data)
-                .then(response => {
-                    console.log(response.data);
-                })
-                .catch(error => {
-                    console.error(error);
-                });
+            return new Promise(function (resolve, reject) { 
+                axios.post('/get-move', data)
+                    .then(response => {
+                        resolve(response.data); 
+                    })
+                    .catch(error => {
+                        reject(error);
+                    });
+            });
         },
     }
 }

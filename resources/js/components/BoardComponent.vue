@@ -117,7 +117,10 @@
         },
 
         methods: {
-            handleClick(event) {
+            async handleClick(event) {
+                // For tracking execution time
+                const t0 = performance.now();
+
                 // Starting from the clicked element
                 let currentElement = event.target;
 
@@ -148,29 +151,26 @@
 
                         // AI makes move
                         if (!this.turn) {
-                            const move   = this.getMove(this.board, this.pieces, this.turn, 3);
+                            const move   = await this.getMove(this.board, this.pieces, this.turn, 3);
+                            console.log(move);
                             const index  = parseInt(move[0]);
                             const row    = parseInt(move[1]);
                             const square = parseInt(move[2]);
 
                             if (move !== false) {
-                                // Wait 1 second before moving piece on the screen, to make it feel more natural
-                                setTimeout(function() {
-                                    if (this.validCastle(this.pieces[this.board[0][4]], this.pieces, this.board, row, square)) {
-                                        this.castle(row, square, this.board[0][4], this.board, this.pieces);
-                                    } else {
-                                        this.movePiece(row, square, this.pieces[index], this.pieces, index, this.board);
-                                    }
+                                if (this.validCastle(this.pieces[this.board[0][4]], this.pieces, this.board, row, square)) {
+                                    this.castle(row, square, this.board[0][4], this.board, this.pieces);
+                                } else {
+                                    this.movePiece(row, square, this.pieces[index], this.pieces, index, this.board);
+                                }
 
-                                    this.switchTurns();
-                                    this.reloadGrid();
-                                }, 1000);
+                                this.switchTurns();
+                                this.reloadGrid();
                             } else {
                                 // Checkmate by white? Stalemate?
                             }
                         }
                     } else if (this.selectPiece(r, s)) {
-                        console.log("selectPiece() returned true");
 
                         if (this.getSelectedPiece().color === 'white' && this.getTurn() === 'white') {
                             let totalValidPieces = this.getValidPieces(this.board, this.pieces, this.turn);
@@ -193,6 +193,10 @@
                         }
                     }
                 }
+
+                const t1 = performance.now();
+                console.log(`Call to handleClick() took ${t1 - t0} milliseconds.`);
+                // Current average is about 2.018 milliseconds
             },
         },
 

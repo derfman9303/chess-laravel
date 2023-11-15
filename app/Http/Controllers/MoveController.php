@@ -15,6 +15,6 @@ class MoveController extends Controller
 
         $moveService = new MoveService($board, $pieces, $turn, $steps);
 
-        return $moveService->getMove();
+        return $moveService->getMove($board, $pieces, $turn, $steps);
     }
 }
