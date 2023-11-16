@@ -33,32 +33,34 @@ class MoveService
                 $moveKeys   = array_keys($validMoves);
 
                 foreach ($moveKeys as $moveKey) {
-                    $newData = $this->getNewData($moveKey);
+                    $validMove = explode(',', $moveKey);
+                    $newRow    = intval($validMove[0]);
+                    $newSquare = intval($validMove[1]);
 
                     if ($validMoves[$moveKey] != 'castle') {
                         // Move piece temporarily
-                        $captured = $this->capturePiece($newData['row'], $newData['square'], $board, $pieces, $turn);
+                        $captured = $this->capturePiece($newRow, $newSquare, $board, $pieces, $turn);
                         $moved    = $piece['moved'];
-                        $this->movePiece($newData['row'], $newData['square'], $piece, $pieces, $validPieceIndex, $board);
+                        $this->movePiece($newRow, $newSquare, $piece, $pieces, $validPieceIndex, $board);
 
                         // Get value of updated board, save to availableMoves
-                        $availableMoves[$oldRow . ',' . $oldSquare . ',' . $newData['row'] . ',' . $newData['square']] = $this->maxi($board, $pieces, $steps);
+                        $availableMoves[$oldRow . ',' . $oldSquare . ',' . $newRow . ',' . $newSquare] = $this->maxi($board, $pieces, $steps);
 
                         // Move piece back to original position, and un-capture the piece if one was captured in the previous temporary move
                         $this->movePiece($oldRow, $oldSquare, $piece, $pieces, $validPieceIndex, $board);
                         $piece['moved'] = $moved;
 
                         // If a piece was captured, un-capture it
-                        $this->unCapturePiece($captured, $newData, $board, $pieces);
+                        $this->unCapturePiece($captured, $newRow, $newSquare, $board, $pieces);
                     } else {
-                        $rook          = $pieces[$board[$newData['row']][$newData['square']]];
+                        $rook          = $pieces[$board[$newRow][$newSquare]];
                         $rookOldRow    = $rook['row'];
                         $rookOldSquare = $rook['square'];
 
                         // Castle temporarily
-                        $this->castle($newData['row'], $newData['square'], $validPieceIndex, $board, $pieces, true);
+                        $this->castle($newRow, $newSquare, $validPieceIndex, $board, $pieces, true);
 
-                        $availableMoves[$oldRow . ',' . $oldSquare . ',' . $newData['row'] . ',' . $newData['square']] = $this->maxi($board, $pieces, $steps);
+                        $availableMoves[$oldRow . ',' . $oldSquare . ',' . $newRow . ',' . $newSquare] = $this->maxi($board, $pieces, $steps);
 
                         // Un-castle
                         $this->unCastle($piece, $rook, $rookOldRow, $rookOldSquare, $oldRow, $oldSquare, $board, $pieces);
@@ -93,10 +95,6 @@ class MoveService
 
     protected function mini($board, $pieces, $steps) {
         if ($steps == 0) {
-            // if ($this->getBoardValue($pieces) != 0) {
-            //     echo "Does not equal 0";
-            //     exit;
-            // }
             return $this->getBoardValue($pieces);
         } else {
             $totalValidPieces = $this->getValidPieces($board, $pieces, false);
@@ -114,14 +112,16 @@ class MoveService
                     $moveKeys   = array_keys($validMoves);
     
                     foreach ($moveKeys as $moveKey) {
-                        $newData = $this->getNewData($moveKey);
+                        $validMove = explode(',', $moveKey);
+                        $newRow    = intval($validMove[0]);
+                        $newSquare = intval($validMove[1]);
     
                         if ($validMoves[$moveKey] != 'castle') {
 
                             // Move piece temporarily
-                            $captured = $this->capturePiece($newData['row'], $newData['square'], $board, $pieces, false);
+                            $captured = $this->capturePiece($newRow, $newSquare, $board, $pieces, false);
                             $moved    = $piece['moved'];
-                            $this->movePiece($newData['row'], $newData['square'], $piece, $pieces, $validPieceIndex, $board);
+                            $this->movePiece($newRow, $newSquare, $piece, $pieces, $validPieceIndex, $board);
     
                             // Get value of updated board, save to availableMoves
                             $score = $this->maxi($board, $pieces, $steps - 1);
@@ -135,14 +135,14 @@ class MoveService
                             $piece['moved'] = $moved;
         
                             // If a piece was captured, un-capture it
-                            $this->unCapturePiece($captured, $newData, $board, $pieces);
+                            $this->unCapturePiece($captured, $newRow, $newSquare, $board, $pieces);
                         } else {
-                            $rook          = $pieces[$board[$newData['row']][$newData['square']]];
+                            $rook          = $pieces[$board[$newRow][$newSquare]];
                             $rookOldRow    = $rook['row'];
                             $rookOldSquare = $rook['square'];
         
                             // Castle temporarily
-                            $this->castle($newData['row'], $newData['square'], $validPieceIndex, $board, $pieces, true);
+                            $this->castle($newRow, $newSquare, $validPieceIndex, $board, $pieces, true);
     
                             $score = $this->maxi($board, $pieces, $steps - 1);
 
@@ -165,10 +165,6 @@ class MoveService
 
     protected function maxi($board, $pieces, $steps) {
         if ($steps == 0) {
-            // if ($this->getBoardValue($pieces) != 0) {
-            //     echo "Does not equal 0";
-            //     exit;
-            // }
             return $this->getBoardValue($pieces);
         } else {
             $totalValidPieces = $this->getValidPieces($board, $pieces, true);
@@ -184,14 +180,16 @@ class MoveService
                     $moveKeys   = array_keys($validMoves);
     
                     foreach ($moveKeys as $moveKey) {
-                        $newData = $this->getNewData($moveKey);
+                        $validMove = explode(',', $moveKey);
+                        $newRow    = intval($validMove[0]);
+                        $newSquare = intval($validMove[1]);
     
                         if ($validMoves[$moveKey] != 'castle') {
     
                             // Move piece temporarily
-                            $captured = $this->capturePiece($newData['row'], $newData['square'], $board, $pieces, true);
+                            $captured = $this->capturePiece($newRow, $newSquare, $board, $pieces, true);
                             $moved    = $piece['moved'];
-                            $this->movePiece($newData['row'], $newData['square'], $piece, $pieces, $validPieceIndex, $board);
+                            $this->movePiece($newRow, $newSquare, $piece, $pieces, $validPieceIndex, $board);
     
                             // Get value of updated board, save to availableMoves
                             $score = $this->mini($board, $pieces, $steps - 1);
@@ -205,14 +203,14 @@ class MoveService
                             $piece['moved'] = $moved;
     
                             // If a piece was captured, un-capture it
-                            $this->unCapturePiece($captured, $newData, $board, $pieces);
+                            $this->unCapturePiece($captured, $newRow, $newSquare, $board, $pieces);
                         } else {
-                            $rook          = $pieces[$board[$newData['row']][$newData['square']]];
+                            $rook          = $pieces[$board[$newRow][$newSquare]];
                             $rookOldRow    = $rook['row'];
                             $rookOldSquare = $rook['square'];
     
                             // Castle temporarily
-                            $this->castle($newData['row'], $newData['square'], $validPieceIndex, $board, $pieces, true);
+                            $this->castle($newRow, $newSquare, $validPieceIndex, $board, $pieces, true);
     
                             $score = $this->mini($board, $pieces, $steps - 1);
 
@@ -268,16 +266,6 @@ class MoveService
         }
 
         return $result;
-    }
-
-    // TODO: Refactor logic to not need this function since it's basically doing nothing
-    protected function getNewData($moveKey) {
-        $validMove = explode(',', $moveKey);
-
-        return [
-            'row' => intval($validMove[0]),
-            'square' => intval($validMove[1]),
-        ];
     }
 
     protected function getValidPieces($board, $pieces, $turn = false) {
@@ -706,7 +694,7 @@ class MoveService
                 $piece['moved'] = $moved;
     
                 // If a piece was captured, un-capture it
-                $this->unCapturePiece($captured, ['row' => $r, 'square' => $s], $board, $pieces);
+                $this->unCapturePiece($captured, $r, $s, $board, $pieces);
             } else {
                 // TODO: Simulate castle move. Needs to check if the king passes through check in the process.
             }
@@ -730,12 +718,12 @@ class MoveService
         return $result;
     }
 
-    protected function unCapturePiece($captured, $newData, &$board, &$pieces) {
+    protected function unCapturePiece($captured, $row, $square, &$board, &$pieces) {
         if ($captured != false) {
             $piece = $pieces[$captured];
             $moved = $piece['moved'];
 
-            $this->movePiece($newData['row'], $newData['square'], $piece, $pieces, $captured, $board);
+            $this->movePiece($row, $square, $piece, $pieces, $captured, $board);
 
             $pieces[$captured]['moved']    = $moved;
             $pieces[$captured]['captured'] = false;
