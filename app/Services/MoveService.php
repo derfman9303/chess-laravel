@@ -380,7 +380,7 @@ class MoveService
         ];
 
         foreach ($moves as $move) {
-            $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $move), $result);
+            $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $move, $valid), $result);
 
             // If called from getValidPieces() and a valid move is found, we can stop the iteration because we already know the piece is valid
             if ($valid && count($result) > 0) {
@@ -402,7 +402,7 @@ class MoveService
         ];
 
         foreach ($moves as $move) {
-            $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $move), $result);
+            $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $move, $valid), $result);
 
             // If called from getValidPieces() and a valid move is found, we can stop the iteration because we already know the piece is valid
             if ($valid && count($result) > 0) {
@@ -424,7 +424,7 @@ class MoveService
         ];
 
         foreach ($moves as $move) {
-            $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $move), $result);
+            $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $move, $valid), $result);
 
             // If called from getValidPieces() and a valid move is found, we can stop the iteration because we already know the piece is valid
             if ($valid && count($result) > 0) {
@@ -523,7 +523,7 @@ class MoveService
     /**
      * The same as the above function, except it works for pieces that can move in unobstructed lines
      */
-    protected function findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $direction) {
+    protected function findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $direction, $valid) {
         $result = [];
         $r = $row;
         $s = $square;
@@ -533,6 +533,11 @@ class MoveService
             if (!$king ? true : ($this->doesMoveCauseCheck($board, $king, $piece, $pieces, $opponentPieces, $r, $s) == false)) {
                 if ($board[$r][$s] == "empty") {
                     $result[$r . ',' . $s] = 'highlighted';
+
+                    // If this function is being called within the context of getValidPieces, we can stop the iteration once a valid move has been found
+                    if ($valid) {
+                        break;
+                    }
                 } else if ($this->getPiece($board, $pieces, $r, $s)['color'] != $piece['color']) {
                     $result[$r . ',' . $s] = 'capture';
                     break;

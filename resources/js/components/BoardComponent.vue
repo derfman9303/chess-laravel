@@ -263,23 +263,19 @@
     * The below classes use div because they need higher specificity to take precedence over the previous-move class
     */
     div.highlighted {
-        background-color: #e3d756;
-        border: 1px solid #c2b849;
+        border: 4px solid #c2b849;
     }
 
     div.capture {
-        background-color: #e64949;
-        border: 1px solid #e64949;
+        border: 4px solid #e64949;
     }
 
     div.castle {
-        background-color: #4cb2e6;
-        border: 1px solid #4cb2e6;
+        border: 4px solid #4cb2e6;
     }
 
     .previous-move {
-        background-color: #91c472;
-        border: 1px solid #91c472;
+        border: 4px solid #91c472;
     }
 
     @media screen and (max-width: 769px) {
