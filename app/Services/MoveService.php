@@ -321,29 +321,24 @@ class MoveService
     protected function kingValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
         $result = [];
 
-        // up
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row - 1, $square), $result);
+        $moves = [
+            ($row - 1) . ',' . $square, // up
+            ($row + 1) . ',' . $square, // down
+            $row . ',' . ($square - 1), // left
+            $row . ',' . ($square + 1), // right
+            ($row - 1) . ',' . ($square - 1), // up/left diagonal
+            ($row - 1) . ',' . ($square + 1), // up/right diagonal
+            ($row + 1) . ',' . ($square - 1), // down/left diagonal
+            ($row + 1) . ',' . ($square + 1), // down/right diagonal
+        ];
 
-        // down
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row + 1, $square), $result);
+        foreach ($moves as $move) {
+            $exploded = explode(',', $move);
+            $row      = $exploded[0];
+            $square   = $exploded[1];
 
-        // left
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row, $square - 1), $result);
-
-        // right
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row, $square + 1), $result);
-        
-        // up/left diagonal
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row - 1, $square - 1), $result);
-
-        // up/right diagonal
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row - 1, $square + 1), $result);
-
-        // down/left diagonal
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row + 1, $square - 1), $result);
-
-        // down/right diagonal
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row + 1, $square + 1), $result);
+            $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row, $square), $result);
+        }
 
         if (!$piece['moved']) {
             // left castle
@@ -363,29 +358,20 @@ class MoveService
     protected function queenValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
         $result = [];
 
-        // up
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'up'), $result);
+        $moves = [
+            'up',
+            'down',
+            'left',
+            'right',
+            'up/right',
+            'up/left',
+            'down/right',
+            'down/left',
+        ];
 
-        // down
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'down'), $result);
-
-        // left
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'left'), $result);
-
-        // right
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'right'), $result);
-
-        // up/right diagonal
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'up/right'), $result);
-
-        // up/left diagonal
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'up/left'), $result);
-
-        // down/right diagonal
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'down/right'), $result);
-
-        // down/left diagonal
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'down/left'), $result);
+        foreach ($moves as $move) {
+            $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $move), $result); 
+        }
 
         return $result;
     }
@@ -393,17 +379,16 @@ class MoveService
     protected function rookValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
         $result = [];
 
-        // up
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'up'), $result);
+        $moves = [
+            'up',
+            'down',
+            'left',
+            'right',
+        ];
 
-        // down
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'down'), $result);
-
-        // left
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'left'), $result);
-
-        // right
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'right'), $result);
+        foreach ($moves as $move) {
+            $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $move), $result); 
+        }
 
         return $result;
     }
@@ -411,17 +396,16 @@ class MoveService
     protected function bishopValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
         $result = [];
 
-        // up/right diagonal
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'up/right'), $result);
+        $moves = [
+            'up/right',
+            'up/left',
+            'down/right',
+            'down/left',
+        ];
 
-        // up/left diagonal
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'up/left'), $result);
-
-        // down/right diagonal
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'down/right'), $result);
-
-        // down/left diagonal
-        $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, 'down/left'), $result);
+        foreach ($moves as $move) {
+            $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $move), $result); 
+        }
 
         return $result;
     }
@@ -429,29 +413,24 @@ class MoveService
     protected function knightValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
         $result = [];
 
-        // up 1
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row - 2, $square - 1), $result);
+        $moves = [
+            ($row - 2) . ',' . ($square - 1), // up 1
+            ($row - 2) . ',' . ($square + 1), // up 2
+            ($row + 2) . ',' . ($square - 1), //down 1
+            ($row + 2) . ',' . ($square + 1), // down 2
+            ($row + 1) . ',' . ($square - 2), // left 1
+            ($row - 1) . ',' . ($square - 2), // left 2
+            ($row - 1) . ',' . ($square + 2), // right 1
+            ($row + 1) . ',' . ($square + 2), // right 2
+        ];
 
-        // up 2
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row - 2, $square + 1), $result);
+        foreach ($moves as $move) {
+            $exploded = explode(',', $move);
+            $row      = $exploded[0];
+            $square   = $exploded[1];
 
-        // down 1
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row + 2, $square - 1), $result);
-
-        // down 2
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row + 2, $square + 1), $result);
-
-        // left 1
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row + 1, $square - 2), $result);
-
-        // left 2
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row - 1, $square - 2), $result);
-
-        // right 1
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row - 1, $square + 2), $result);
-
-        // right 2
-        $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row + 1, $square + 2), $result);
+            $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row, $square), $result);
+        }
 
         return $result;
     }
