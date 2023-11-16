@@ -764,7 +764,6 @@ class MoveService
      */
     protected function kingTargeted($board, $king, $pieces, $opponentPieces) {
         if (count($opponentPieces) > 0) {
-            // for (let v = 0; v < opponentPieces.length; v++) {
             foreach ($opponentPieces as $opponentPieceIndex) {
                 $opponentPiece = $pieces[$opponentPieceIndex];
 
@@ -772,7 +771,6 @@ class MoveService
                     $validMoves    = $this->getValidMoves($board, $opponentPiece, $pieces, $opponentPiece['row'], $opponentPiece['square']);
                     $validMoveKeys = array_keys($validMoves);
     
-                    // for (let m = 0; m < validMoveKeys.length; m++) {
                     foreach ($validMoveKeys as $m) {
                         if ($validMoves[$m] == 'capture') {
                             $splitKey = explode(',', $m);
