@@ -5192,7 +5192,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     handleClick: function handleClick(event) {
       var _this = this;
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        var t0, currentElement, r, s, move, index, row, square, totalValidPieces, opponentPieces, king, validMoves, t1;
+        var t0, currentElement, r, s, piece, move, index, row, square, _piece, oldRow, oldSquare, totalValidPieces, opponentPieces, king, validMoves, t1;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
@@ -5205,54 +5205,71 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
               // If the user clicked on a square (or the svg/path of the piece inside the square), otherwise do nothing
               if (!(currentElement && currentElement.classList.contains('square'))) {
-                _context.next = 22;
+                _context.next = 25;
                 break;
               }
               r = parseInt(currentElement.getAttribute('data-r'));
               s = parseInt(currentElement.getAttribute('data-s'));
               if (!(_this.selectedPiece !== null)) {
-                _context.next = 21;
+                _context.next = 24;
                 break;
               }
+              piece = _this.pieces[_this.selectedPiece];
               if (_this.grid[r][s].classList.contains("highlighted") || _this.grid[r][s].classList.contains("capture")) {
+                // Add highlighting before moving/castling the piece because otherwise the piece's row/square coords will be updated to match r/s
+                _this.removeHighlighting();
+                _this.removePreviousMoveHighlighting();
+                _this.addPreviousMoveHighlighting(piece.row, piece.square, r, s, _this.grid);
                 _this.movePiece(r, s);
-                _this.reloadGrid();
                 _this.switchTurns();
+                _this.reloadGrid();
               } else if (_this.grid[r][s].classList.contains("castle")) {
+                _this.removeHighlighting();
+                _this.removePreviousMoveHighlighting();
+                _this.addPreviousMoveHighlighting(piece.row, piece.square, r, s, _this.grid);
                 _this.castle(r, s);
                 _this.switchTurns();
+                _this.reloadGrid();
+              } else {
+                // The player clicked off the selected piece, so the highlighting should be cleared
+                _this.removeHighlighting();
               }
               _this.selectedPiece = null;
-              _this.removeHighlighting();
 
               // AI makes move
               if (_this.turn) {
-                _context.next = 19;
+                _context.next = 22;
                 break;
               }
               _context.next = 13;
               return _this.getMove(_this.board, _this.pieces, _this.turn, 3);
             case 13:
               move = _context.sent;
-              console.log(move);
               index = parseInt(move[0]);
               row = parseInt(move[1]);
               square = parseInt(move[2]);
+              _piece = _this.pieces[index];
+              oldRow = _piece.row;
+              oldSquare = _piece.square;
+              console.log(move);
               if (move !== false) {
                 if (_this.validCastle(_this.pieces[_this.board[0][4]], _this.pieces, _this.board, row, square)) {
                   _this.castle(row, square, _this.board[0][4], _this.board, _this.pieces);
                 } else {
-                  _this.movePiece(row, square, _this.pieces[index], _this.pieces, index, _this.board);
+                  _this.movePiece(row, square, _piece, _this.pieces, index, _this.board);
                 }
+                _this.removeHighlighting();
+                _this.removePreviousMoveHighlighting();
+                _this.addPreviousMoveHighlighting(oldRow, oldSquare, _piece.row, _piece.square, _this.grid);
                 _this.switchTurns();
                 _this.reloadGrid();
               } else {
                 // Checkmate by white? Stalemate?
               }
-            case 19:
-              _context.next = 22;
+            case 22:
+              _context.next = 25;
               break;
-            case 21:
+            case 24:
               if (_this.selectPiece(r, s)) {
                 if (_this.getSelectedPiece().color === 'white' && _this.getTurn() === 'white') {
                   totalValidPieces = _this.getValidPieces(_this.board, _this.pieces, _this.turn);
@@ -5272,11 +5289,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                   _this.selectedPiece = null;
                 }
               }
-            case 22:
+            case 25:
               t1 = performance.now();
               console.log("Call to handleClick() took ".concat(t1 - t0, " milliseconds."));
-              // Current average is about 2.018 milliseconds
-            case 24:
+            case 27:
             case "end":
               return _context.stop();
           }
@@ -5722,6 +5738,10 @@ __webpack_require__.r(__webpack_exports__);
         }
       }
     },
+    addPreviousMoveHighlighting: function addPreviousMoveHighlighting(oldRow, oldSquare, row, square, grid) {
+      grid[oldRow][oldSquare].classList.add('previous-move');
+      grid[row][square].classList.add('previous-move');
+    },
     /**
      * Called by the validMove functions for the specific pieces.
      * Moves the piece, then checks that the king isn't targeted in the new board state, and then moves the piece back.
@@ -6062,6 +6082,16 @@ __webpack_require__.r(__webpack_exports__);
       });
       [].forEach.call(castle, function (s) {
         s.classList.remove("castle");
+      });
+    },
+    /**
+     * This function is separate from removeHighlighting() because if the user selects a piece and then de-selects,
+     * only the available move highlighting should be cleared, not the AI's previous move highlighting
+     */
+    removePreviousMoveHighlighting: function removePreviousMoveHighlighting() {
+      var previousMove = document.querySelectorAll(".previous-move");
+      [].forEach.call(previousMove, function (s) {
+        s.classList.remove("previous-move");
       });
     },
     /**
@@ -10618,7 +10648,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.square {\n    height: 50px;\n    width: 50px;\n    padding: 0;\n}\n.light {\n    background-color: #b5b4b3;\n    border: 1px solid #b5b4b3;\n}\n.dark {\n    background-color: #70706f;\n    border: 1px solid #70706f;\n}\n.square svg {\n    height: 100%;\n    width: 100%;\n    padding: 7.5px;\n}\n.highlighted {\n    background-color: #e3d756;\n    border: 1px solid #c2b849;\n}\n.capture {\n    background-color: #e64949;\n    border: 1px solid #e64949;\n}\n.castle {\n    background-color: #4cb2e6;\n    border: 1px solid #4cb2e6;\n}\n@media screen and (max-width: 769px) {\n#board {\n        width: 90vw;\n}\n.square {\n        height: calc(90vw / 8);\n        width: calc(90vw / 8);\n}\n.square svg {\n        padding: 5px;\n}\n.captured-tray {\n        width: 90vw;\n}\n}\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n.square {\n    height: 50px;\n    width: 50px;\n    padding: 0;\n}\n.light {\n    background-color: #b5b4b3;\n    border: 1px solid #b5b4b3;\n}\n.dark {\n    background-color: #70706f;\n    border: 1px solid #70706f;\n}\n.square svg {\n    height: 100%;\n    width: 100%;\n    padding: 7.5px;\n}\n\n/**\n* The below classes use div because they need higher specificity to take precedence over the previous-move class\n*/\ndiv.highlighted {\n    background-color: #e3d756;\n    border: 1px solid #c2b849;\n}\ndiv.capture {\n    background-color: #e64949;\n    border: 1px solid #e64949;\n}\ndiv.castle {\n    background-color: #4cb2e6;\n    border: 1px solid #4cb2e6;\n}\n.previous-move {\n    background-color: #91c472;\n    border: 1px solid #91c472;\n}\n@media screen and (max-width: 769px) {\n#board {\n        width: 90vw;\n}\n.square {\n        height: calc(90vw / 8);\n        width: calc(90vw / 8);\n}\n.square svg {\n        padding: 5px;\n}\n.captured-tray {\n        width: 90vw;\n}\n}\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -28635,7 +28665,7 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "row d-flex flex-nowrap" }, [
+    return _c("div", { staticClass: "d-flex flex-nowrap" }, [
       _c("div", { staticClass: "square" }),
       _vm._v(" "),
       _c("div", { staticClass: "square" }),
@@ -28657,7 +28687,7 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "row d-flex flex-nowrap" }, [
+    return _c("div", { staticClass: "d-flex flex-nowrap" }, [
       _c("div", { staticClass: "square" }),
       _vm._v(" "),
       _c("div", { staticClass: "square" }),
@@ -28679,7 +28709,7 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "row d-flex flex-nowrap" }, [
+    return _c("div", { staticClass: "d-flex flex-nowrap" }, [
       _c("div", { staticClass: "square" }),
       _vm._v(" "),
       _c("div", { staticClass: "square" }),
@@ -28701,7 +28731,7 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "row d-flex flex-nowrap" }, [
+    return _c("div", { staticClass: "d-flex flex-nowrap" }, [
       _c("div", { staticClass: "square" }),
       _vm._v(" "),
       _c("div", { staticClass: "square" }),
@@ -28723,7 +28753,7 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "row d-flex flex-nowrap" }, [
+    return _c("div", { staticClass: "d-flex flex-nowrap" }, [
       _c("div", { staticClass: "square" }),
       _vm._v(" "),
       _c("div", { staticClass: "square" }),
@@ -28745,7 +28775,7 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "row d-flex flex-nowrap" }, [
+    return _c("div", { staticClass: "d-flex flex-nowrap" }, [
       _c("div", { staticClass: "square" }),
       _vm._v(" "),
       _c("div", { staticClass: "square" }),
@@ -28767,7 +28797,7 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "row d-flex flex-nowrap" }, [
+    return _c("div", { staticClass: "d-flex flex-nowrap" }, [
       _c("div", { staticClass: "square" }),
       _vm._v(" "),
       _c("div", { staticClass: "square" }),
@@ -28789,7 +28819,7 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "row d-flex flex-nowrap" }, [
+    return _c("div", { staticClass: "d-flex flex-nowrap" }, [
       _c("div", { staticClass: "square" }),
       _vm._v(" "),
       _c("div", { staticClass: "square" }),

@@ -456,6 +456,11 @@ export default {
             }
         },
 
+        addPreviousMoveHighlighting(oldRow, oldSquare, row, square, grid) {
+            grid[oldRow][oldSquare].classList.add('previous-move');
+            grid[row][square].classList.add('previous-move');
+        },
+
         /**
          * Called by the validMove functions for the specific pieces.
          * Moves the piece, then checks that the king isn't targeted in the new board state, and then moves the piece back.
@@ -835,18 +840,32 @@ export default {
          * Remove highlighting from all squares
          */
         removeHighlighting() {
-            let highlighted = document.querySelectorAll(".highlighted");
-            let capture     = document.querySelectorAll(".capture");
-            let castle      = document.querySelectorAll(".castle");
+            let highlighted  = document.querySelectorAll(".highlighted");
+            let capture      = document.querySelectorAll(".capture");
+            let castle       = document.querySelectorAll(".castle");
 
             [].forEach.call(highlighted, function(s) {
                 s.classList.remove("highlighted");
             });
+
             [].forEach.call(capture, function(s) {
                 s.classList.remove("capture");
             });
+
             [].forEach.call(castle, function(s) {
                 s.classList.remove("castle");
+            });
+        },
+
+        /**
+         * This function is separate from removeHighlighting() because if the user selects a piece and then de-selects,
+         * only the available move highlighting should be cleared, not the AI's previous move highlighting
+         */
+        removePreviousMoveHighlighting() {
+            let previousMove = document.querySelectorAll(".previous-move");
+
+            [].forEach.call(previousMove, function(s) {
+                s.classList.remove("previous-move");
             });
         },
 
