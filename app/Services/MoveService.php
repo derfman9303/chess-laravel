@@ -521,7 +521,7 @@ class MoveService
             // If king is set, check if the move in question would result in the king being targeted. Otherwise, equate to true so that the checkmate logic is ignored.
             // We can ignore it because if you can make a move on your turn to capture the opponent's $king, you don't need to worry about putting yourself in check or checkmate because the game ends.
             if (!$king ? true : ($this->doesMoveCauseCheck($board, $king, $piece, $pieces, $opponentPieces, $r, $s) == false)) {
-                if ($board[$r][$s] == "empty") {
+                if ($board[$r][$s] === "empty") {
                     $result[$r . ',' . $s] = 'highlighted';
                 } elseif ($this->getPiece($board, $pieces, $r, $s)['color'] != $piece['color']) {
                     $result[$r . ',' . $s] = 'capture';
@@ -543,7 +543,7 @@ class MoveService
         // Check if r/s coordinates are still within the board
         while ($r >= 0 && $r < 8 && $s >= 0 && $s < 8) {
             if (!$king ? true : ($this->doesMoveCauseCheck($board, $king, $piece, $pieces, $opponentPieces, $r, $s) == false)) {
-                if ($board[$r][$s] == "empty") {
+                if ($board[$r][$s] === "empty") {
                     $result[$r . ',' . $s] = 'highlighted';
 
                     // If this function is being called within the context of getValidPieces, we can stop the iteration once a valid move has been found
@@ -600,13 +600,13 @@ class MoveService
         if ($r >= 0 && $r < 8 && $s >= 0 && $s < 8) {
             if ($capture) {
                 if (!$king ? true : ($this->doesMoveCauseCheck($board, $king, $piece, $pieces, $opponentPieces, $r, $s) == false)) {
-                    if ($board[$r][$s] != "empty" && $this->getPiece($board, $pieces, $r, $s)['color'] != $piece['color']) {
+                    if ($board[$r][$s] !== "empty" && $this->getPiece($board, $pieces, $r, $s)['color'] != $piece['color']) {
                         $result[$r . ',' . $s] = 'capture';
                     }
                 }
             } else {
                 if (!$king ? true : ($this->doesMoveCauseCheck($board, $king, $piece, $pieces, $opponentPieces, $r, $s) == false)) {
-                    if ($board[$r][$s] == "empty") {
+                    if ($board[$r][$s] === "empty") {
                         $result[$r . ',' . $s] = 'highlighted';
                     }
                 }
