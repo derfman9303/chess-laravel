@@ -25,7 +25,7 @@ class MoveService
                 $piece      = $pieces[$validPieceIndex];
                 $oldRow     = $piece['row'];
                 $oldSquare  = $piece['square'];
-                $validMoves = $this->getValidMoves($board, $piece, $pieces, $oldRow, $oldSquare, $king, $opponentPieces);
+                $validMoves = $this->getValidMoves($board, $piece, $pieces, $oldRow, $oldSquare, false, $king, $opponentPieces);
                 $moveKeys   = array_keys($validMoves);
 
                 foreach ($moveKeys as $moveKey) {
@@ -104,7 +104,7 @@ class MoveService
                     $piece      = $pieces[$validPieceIndex];
                     $oldRow     = $piece['row'];
                     $oldSquare  = $piece['square'];
-                    $validMoves = $this->getValidMoves($board, $piece, $pieces, $oldRow, $oldSquare, $king, $opponentPieces);
+                    $validMoves = $this->getValidMoves($board, $piece, $pieces, $oldRow, $oldSquare, false, $king, $opponentPieces);
                     $moveKeys   = array_keys($validMoves);
     
                     foreach ($moveKeys as $moveKey) {
@@ -280,7 +280,7 @@ class MoveService
                 }
             }
 
-            if (!$piece['captured'] && !empty($this->getValidMoves($board, $piece, $pieces, $piece['row'], $piece['square']))) {
+            if (!$piece['captured'] && !empty($this->getValidMoves($board, $piece, $pieces, $piece['row'], $piece['square'], true))) {
                 if ($piece['color'] == $this->getTurnColor($turn)) {
                     $myPieces[] = $index;
                 } else {
@@ -292,23 +292,28 @@ class MoveService
         return [$myPieces, $opponentPieces, $myKing, $opponentKing];
     }
 
-    protected function getValidMoves($board, $piece, $pieces, $row, $square, $king = false, $opponentPieces = []) {
+    /**
+     * Returns all the valid moves for a given piece. $valid is used for when checking if the 
+     * piece has at least one valid move, in the context of the getValidPieces() function.
+     * If set to true, the iteration will stop once a valid move is found, to improve efficiency.
+     */
+    protected function getValidMoves($board, $piece, $pieces, $row, $square, $valid = false, $king = false, $opponentPieces = []) {
 
         switch ($piece['type']) {
             case 'king':
-                $result = $this->kingValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king);
+                $result = $this->kingValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $valid, $king);
                 break;
             case 'queen':
-                $result = $this->queenValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king);
+                $result = $this->queenValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $valid, $king);
                 break;
             case 'rook':
-                $result = $this->rookValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king);
+                $result = $this->rookValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $valid, $king);
                 break;
             case 'bishop':
-                $result = $this->bishopValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king);
+                $result = $this->bishopValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $valid, $king);
                 break;
             case 'knight':
-                $result = $this->knightValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king);
+                $result = $this->knightValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $valid, $king);
                 break;
             case 'pawn':
                 $result = $this->pawnValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king);
@@ -318,7 +323,7 @@ class MoveService
         return $result;
     }
 
-    protected function kingValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
+    protected function kingValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $valid, $king = false) {
         $result = [];
 
         $moves = [
@@ -338,24 +343,29 @@ class MoveService
             $square   = $exploded[1];
 
             $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row, $square), $result);
+
+            // If called from getValidPieces() and a valid move is found, we can stop the iteration because we already know the piece is valid
+            if ($valid && count($result) > 0) {
+                break;
+            }
         }
 
         if (!$piece['moved']) {
             // left castle
             if ($this->validLeftCastle($piece, $pieces, $board, $row, $square)) {
-                $result[$row . ',' . ($square - 4)] = 'castle';
+                $result[$piece['row'] . ',' . ($piece['square'] - 4)] = 'castle';
             }
     
             // right castle
             if ($this->validRightCastle($piece, $pieces, $board, $row, $square)) {
-                $result[$row . ',' . ($square + 3)] = 'castle';
+                $result[$piece['row'] . ',' . ($piece['square'] + 3)] = 'castle';
             }
         }
 
         return $result;
     }
 
-    protected function queenValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
+    protected function queenValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $valid, $king = false) {
         $result = [];
 
         $moves = [
@@ -370,13 +380,18 @@ class MoveService
         ];
 
         foreach ($moves as $move) {
-            $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $move), $result); 
+            $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $move), $result);
+
+            // If called from getValidPieces() and a valid move is found, we can stop the iteration because we already know the piece is valid
+            if ($valid && count($result) > 0) {
+                break;
+            }
         }
 
         return $result;
     }
 
-    protected function rookValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
+    protected function rookValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $valid, $king = false) {
         $result = [];
 
         $moves = [
@@ -387,13 +402,18 @@ class MoveService
         ];
 
         foreach ($moves as $move) {
-            $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $move), $result); 
+            $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $move), $result);
+
+            // If called from getValidPieces() and a valid move is found, we can stop the iteration because we already know the piece is valid
+            if ($valid && count($result) > 0) {
+                break;
+            }
         }
 
         return $result;
     }
 
-    protected function bishopValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
+    protected function bishopValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $valid, $king = false) {
         $result = [];
 
         $moves = [
@@ -404,13 +424,18 @@ class MoveService
         ];
 
         foreach ($moves as $move) {
-            $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $move), $result); 
+            $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $move), $result);
+
+            // If called from getValidPieces() and a valid move is found, we can stop the iteration because we already know the piece is valid
+            if ($valid && count($result) > 0) {
+                break;
+            }
         }
 
         return $result;
     }
 
-    protected function knightValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $king = false) {
+    protected function knightValidMoves($board, $piece, $pieces, $row, $square, $opponentPieces, $valid, $king = false) {
         $result = [];
 
         $moves = [
@@ -430,6 +455,11 @@ class MoveService
             $square   = $exploded[1];
 
             $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row, $square), $result);
+
+            // If called from getValidPieces() and a valid move is found, we can stop the iteration because we already know the piece is valid
+            if ($valid && count($result) > 0) {
+                break;
+            }
         }
 
         return $result;
