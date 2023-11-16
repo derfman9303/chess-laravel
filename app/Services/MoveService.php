@@ -648,6 +648,38 @@ class MoveService
         return false;
     }
 
+    protected function castle($row, $square, $piece, $board, $pieces) {
+
+        // Identify the rook to be castled
+        $rookIndex = $board[$row][$square];
+
+        // Vacate squares
+        $board[$pieces[$piece]['row']][$pieces[$piece]['square']] = 'empty';
+        $board[$row][$square] = 'empty';
+
+        if ($square == 7) {
+            // Move the king
+            $this->movePiece($row, $square - 1, $pieces[$piece], $pieces, $piece, $board);
+
+            // Move the rook
+            $this->movePiece($row, $square - 2, $pieces[$rookIndex], $pieces, $rookIndex, $board);
+        } else if ($square == 0) {
+            // Move the king
+            $this->movePiece($row, $square + 2, $pieces[$piece], $pieces, $piece, $board);
+
+            // Move the rook
+            $this->movePiece($row, $square + 3, $pieces[$rookIndex], $pieces, $rookIndex, $board);
+        }
+    }
+
+    protected function unCastle($king, $rook, $rookOldRow, $rookOldSquare, $kingOldRow, $kingOldSquare, &$board, &$pieces) {
+        $this->movePiece($rookOldRow, $rookOldSquare, $rook, $pieces, $rook['index'], $board);
+        $this->movePiece($kingOldRow, $kingOldSquare, $king, $pieces, $king['index'], $board);
+
+        $pieces[$rook['index']]['moved'] = false;
+        $pieces[$king['index']]['moved'] = false;
+    }
+
     /**
      * Returns the piece object, given its location on the board
      * @param {*} board 

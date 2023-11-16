@@ -152,7 +152,7 @@
                             this.removeHighlighting();
                             this.removePreviousMoveHighlighting();
                             this.addPreviousMoveHighlighting(piece.row, piece.square, r, s, this.grid);
-                            this.castle(r, s);
+                            this.castle(r, s, this.selectedPiece, this.board, this.pieces);
                             this.switchTurns();
                             this.reloadGrid();
                         } else {

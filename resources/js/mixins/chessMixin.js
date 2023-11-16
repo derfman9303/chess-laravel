@@ -594,24 +594,24 @@ export default {
             }
         },
 
-        castle(row, square, piece, board, pieces) {
+        castle(row, square, kingIndex, board, pieces) {
 
             // Identify the rook to be castled
             const rookIndex = board[row][square];
     
             // Vacate squares
-            board[pieces[piece].row][pieces[piece].square] = 'empty';
+            board[pieces[kingIndex].row][pieces[kingIndex].square] = 'empty';
             board[row][square] = 'empty';
     
             if (square === 7) {
                 // Move the king
-                this.movePiece(row, square - 1, pieces[piece], pieces, piece, board);
+                this.movePiece(row, square - 1, pieces[kingIndex], pieces, kingIndex, board);
     
                 // Move the rook
                 this.movePiece(row, square - 2, pieces[rookIndex], pieces, rookIndex, board);
             } else if (square === 0) {
                 // Move the king
-                this.movePiece(row, square + 2, pieces[piece], pieces, piece, board);
+                this.movePiece(row, square + 2, pieces[kingIndex], pieces, kingIndex, board);
     
                 // Move the rook
                 this.movePiece(row, square + 3, pieces[rookIndex], pieces, rookIndex, board);

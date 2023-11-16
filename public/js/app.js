@@ -5227,7 +5227,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 _this.removeHighlighting();
                 _this.removePreviousMoveHighlighting();
                 _this.addPreviousMoveHighlighting(piece.row, piece.square, r, s, _this.grid);
-                _this.castle(r, s);
+                _this.castle(r, s, _this.selectedPiece, _this.board, _this.pieces);
                 _this.switchTurns();
                 _this.reloadGrid();
               } else {
@@ -5867,22 +5867,22 @@ __webpack_require__.r(__webpack_exports__);
         pieces[captured].captured = false;
       }
     },
-    castle: function castle(row, square, piece, board, pieces) {
+    castle: function castle(row, square, kingIndex, board, pieces) {
       // Identify the rook to be castled
       var rookIndex = board[row][square];
 
       // Vacate squares
-      board[pieces[piece].row][pieces[piece].square] = 'empty';
+      board[pieces[kingIndex].row][pieces[kingIndex].square] = 'empty';
       board[row][square] = 'empty';
       if (square === 7) {
         // Move the king
-        this.movePiece(row, square - 1, pieces[piece], pieces, piece, board);
+        this.movePiece(row, square - 1, pieces[kingIndex], pieces, kingIndex, board);
 
         // Move the rook
         this.movePiece(row, square - 2, pieces[rookIndex], pieces, rookIndex, board);
       } else if (square === 0) {
         // Move the king
-        this.movePiece(row, square + 2, pieces[piece], pieces, piece, board);
+        this.movePiece(row, square + 2, pieces[kingIndex], pieces, kingIndex, board);
 
         // Move the rook
         this.movePiece(row, square + 3, pieces[rookIndex], pieces, rookIndex, board);
