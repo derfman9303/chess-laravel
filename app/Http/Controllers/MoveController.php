@@ -13,7 +13,7 @@ class MoveController extends Controller
         $turn   = $request->input('turn');
         $steps  = $request->input('steps');
 
-        $moveService = new MoveService($board, $pieces, $turn, $steps);
+        $moveService = new MoveService;
 
         return $moveService->getMove($board, $pieces, $turn, $steps);
     }

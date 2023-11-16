@@ -4,11 +4,7 @@ namespace App\Services;
 
 class MoveService
 {
-    public function __construct($board, $pieces, $turn, $steps) {
-        $this->board     = $board;
-        $this->pieces    = $pieces;
-        $this->turn      = $turn;
-        $this->steps     = $steps;
+    public function __construct() {
         $this->kingVal   = 900;
         $this->queenVal  = 90;
         $this->rookVal   = 50; 
