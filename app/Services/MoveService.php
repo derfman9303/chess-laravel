@@ -108,7 +108,7 @@ class MoveService
             $validPieces      = $totalValidPieces[0];
             $opponentPieces   = $totalValidPieces[1];
             $king             = $totalValidPieces[2]; 
-            $min              = INF;
+            $min              = null;
 
             $targeted      = $this->getTargetedSquares($board, $pieces, $opponentPieces);
             $targetedBoard = $this->markTargetedSquaresOnBoard($targeted);
@@ -136,7 +136,7 @@ class MoveService
                             // Get value of updated board, save to availableMoves
                             $score = $this->maxi($board, $pieces, $steps - 1);
 
-                            if ($score < $min) {
+                            if (is_null($min) || $score < $min) {
                                 $min = $score;
                             }
     
@@ -156,7 +156,7 @@ class MoveService
     
                             $score = $this->maxi($board, $pieces, $steps - 1);
 
-                            if ($score < $min) {
+                            if (is_null($min) || $score < $min) {
                                 $min = $score;
                             }
     
@@ -182,7 +182,7 @@ class MoveService
             // TODO: These are not defined in the original version. Why?
             $opponentPieces   = $totalValidPieces[1];
             $king             = $totalValidPieces[2]; 
-            $max              = -INF;
+            $max              = null;
 
             $targeted      = $this->getTargetedSquares($board, $pieces, $opponentPieces);
             $targetedBoard = $this->markTargetedSquaresOnBoard($targeted);
@@ -210,7 +210,7 @@ class MoveService
                             // Get value of updated board, save to availableMoves
                             $score = $this->mini($board, $pieces, $steps - 1);
 
-                            if ($score > $max) {
+                            if (is_null($max) || $score > $max) {
                                 $max = $score;
                             }
     
@@ -230,7 +230,7 @@ class MoveService
     
                             $score = $this->mini($board, $pieces, $steps - 1);
 
-                            if ($score > $max) {
+                            if (is_null($max) || $score > $max) {
                                 $max = $score;
                             }
     
@@ -432,6 +432,10 @@ class MoveService
         }
     }
 
+    /**
+     * Removes the moves in the $validMoves array which would put the piece on a square that the opponent is attacking.
+     * This is used to determine where the king can move.
+     */
     protected function removeMovesToTargetedSquares($validMoves, $targetedBoard) {
         $result = $validMoves;
 
@@ -911,21 +915,24 @@ class MoveService
         $data2 = $validMoveData[1];
         $data3 = $validMoveData[2];
 
-        // If the piece is one that can only make a single valid move, to capture a blocked attacking piece
-        if (isset($data1[$piece['index']])) {
-            $move = $data1[$piece['index']];
+        if ($piece['type'] !== 'king') {
+            // If the piece is one that can only make a single valid move, to capture a blocked attacking piece
+            if (isset($data1[$piece['index']])) {
+                $move = $data1[$piece['index']];
 
-            if (($r . ',' . $s) != $move) {
+                if (($r . ',' . $s) != $move) {
+                    return true;
+                }
+
+            // Else if the move we're checking is not one of the moves that would cancel check
+            } elseif (!empty($data2) && !in_array(($r . ',' . $s), $data2)) {
                 return true;
             }
-
-        // Else if the move we're checking is not one of the moves that would cancel check
-        } elseif (!empty($data2) && !in_array(($r . ',' . $s), $data2)) {
-            return true;
-
-        // Else if the piece is the king, and the move we're checking is not one of the found valid moves for the king that cancel the check
-        } elseif ($piece['type'] == 'king' && !in_array(($r . ',' . $s), array_keys($data3))) {
-            return true;
+        } else {
+            // If the piece is the king, and the move we're checking is not one of the found valid moves for the king that cancel the check
+            if (!in_array(($r . ',' . $s), array_keys($data3))) {
+                return true;
+            }
         }
 
         return false;
