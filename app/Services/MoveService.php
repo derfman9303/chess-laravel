@@ -36,7 +36,6 @@ class MoveService
                 $piece      = $pieces[$validPieceIndex];
                 $oldRow     = $piece['row'];
                 $oldSquare  = $piece['square'];
-                // $validMoves = $this->getValidMoves($board, $piece, $pieces, false, $king, $opponentPieces);
                 $validMoves = $this->calculateValidMoves($board, $piece, $pieces, false, $targeted, $targetedBoard, $king, $opponentPieces);
                 $moveKeys   = array_keys($validMoves);
 
@@ -119,7 +118,6 @@ class MoveService
                     $piece      = $pieces[$validPieceIndex];
                     $oldRow     = $piece['row'];
                     $oldSquare  = $piece['square'];
-                    // $validMoves = $this->getValidMoves($board, $piece, $pieces, false, $king, $opponentPieces);
                     $validMoves = $this->calculateValidMoves($board, $piece, $pieces, false, $targeted, $targetedBoard, $king, $opponentPieces);
                     $moveKeys   = array_keys($validMoves);
     
@@ -194,8 +192,7 @@ class MoveService
                     $piece      = $pieces[$validPieceIndex];
                     $oldRow     = $piece['row'];
                     $oldSquare  = $piece['square'];
-                    // $validMoves = $this->getValidMoves($board, $piece, $pieces);
-                    $validMoves = $this->calculateValidMoves($board, $piece, $pieces, false, $targeted, $targetedBoard, false, []);
+                    $validMoves = $this->calculateValidMoves($board, $piece, $pieces, false, $targeted, $targetedBoard, $king, $opponentPieces);
                     $moveKeys   = array_keys($validMoves);
     
                     foreach ($moveKeys as $moveKey) {
