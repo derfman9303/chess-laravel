@@ -767,11 +767,20 @@ class MoveService
         $r      = $piece['row'];
         $s      = $piece['square'];
 
+        $opponentKingFound = false;
+
         // Check if r/s coordinates are still within the board
         while ($r >= 0 && $r < 8 && $s >= 0 && $s < 8) {
             if (!$king ? true : ($this->doesMoveCauseCheck($board, $king, $piece, $pieces, $opponentPieces, $r, $s, $validMoveData) == false)) {
                 if ($board[$r][$s] === "empty") {
-                    $result[$r . ',' . $s] = 'highlighted';
+
+                    // If the opponent's king is found, consider the next square along the attack path to be targeted so the king knows it can't move there
+                    if ($opponentKingFound) {
+                        $result[$r . ',' . $s] = 'targeted';
+                        break;
+                    } else {
+                        $result[$r . ',' . $s] = 'highlighted';
+                    }
 
                     // If this function is being called within the context of getValidPieces, we can stop the iteration once a valid move has been found
                     if ($valid) {
@@ -779,7 +788,15 @@ class MoveService
                     }
                 } elseif ($this->getPiece($board, $pieces, $r, $s)['color'] != $piece['color']) {
                     $result[$r . ',' . $s] = 'capture';
-                    break;
+
+                    // If the opponent's king is under attack, we know that the next square over cannot be moved to by that king because it would not cancel the check.
+                    // Set $opponentKingFound to true so that we can add one more targeted square to the results.
+                    if ($this->getPiece($board, $pieces, $r, $s)['type'] == 'king') {
+                        $opponentKingFound = true;
+                    } else {
+                        break;
+                    }
+
                 } elseif ($this->getPiece($board, $pieces, $r, $s)['color'] == $piece['color'] && ($r != $piece['row'] || $s != $piece['square'])) {
                     $result[$r . ',' . $s] = 'targeted';
                     break;
