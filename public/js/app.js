@@ -5481,14 +5481,8 @@ __webpack_require__.r(__webpack_exports__);
       this.grid = [[this.squares[0], this.squares[1], this.squares[2], this.squares[3], this.squares[4], this.squares[5], this.squares[6], this.squares[7]], [this.squares[8], this.squares[9], this.squares[10], this.squares[11], this.squares[12], this.squares[13], this.squares[14], this.squares[15]], [this.squares[16], this.squares[17], this.squares[18], this.squares[19], this.squares[20], this.squares[21], this.squares[22], this.squares[23]], [this.squares[24], this.squares[25], this.squares[26], this.squares[27], this.squares[28], this.squares[29], this.squares[30], this.squares[31]], [this.squares[32], this.squares[33], this.squares[34], this.squares[35], this.squares[36], this.squares[37], this.squares[38], this.squares[39]], [this.squares[40], this.squares[41], this.squares[42], this.squares[43], this.squares[44], this.squares[45], this.squares[46], this.squares[47]], [this.squares[48], this.squares[49], this.squares[50], this.squares[51], this.squares[52], this.squares[53], this.squares[54], this.squares[55]], [this.squares[56], this.squares[57], this.squares[58], this.squares[59], this.squares[60], this.squares[61], this.squares[62], this.squares[63]]];
     },
     definePiecesArray: function definePiecesArray() {
-      this.pieces = [this.newPiece('king', 'white', 7, 4), this.newPiece('king', 'black', 0, 4), this.newPiece('queen', 'white', 7, 3), this.newPiece('queen', 'black', 0, 3), this.newPiece('rook', 'white', 7, 0), this.newPiece('rook', 'white', 7, 7), this.newPiece('rook', 'black', 0, 0), this.newPiece('rook', 'black', 0, 7), this.newPiece('knight', 'white', 7, 1), this.newPiece('knight', 'white', 7, 6), this.newPiece('knight', 'black', 0, 1), this.newPiece('knight', 'black', 0, 6), this.newPiece('bishop', 'white', 7, 2), this.newPiece('bishop', 'white', 7, 5), this.newPiece('bishop', 'black', 0, 2), this.newPiece('bishop', 'black', 0, 5), this.newPiece('pawn', 'white', 6, 0), this.newPiece('pawn', 'white', 6, 1), this.newPiece('pawn', 'white', 6, 2), this.newPiece('pawn', 'white', 6, 3), this.newPiece('pawn', 'white', 6, 4), this.newPiece('pawn', 'white', 6, 5), this.newPiece('pawn', 'white', 6, 6), this.newPiece('pawn', 'white', 6, 7), this.newPiece('pawn', 'black', 1, 0), this.newPiece('pawn', 'black', 1, 1), this.newPiece('pawn', 'black', 1, 2), this.newPiece('pawn', 'black', 1, 3), this.newPiece('pawn', 'black', 1, 4), this.newPiece('pawn', 'black', 1, 5), this.newPiece('pawn', 'black', 1, 6), this.newPiece('pawn', 'black', 1, 7)
-
-      // this.newPiece('king', 'white', 7, 4),
-      // this.newPiece('queen', 'black', 0, 3),
-      // this.newPiece('queen', 'black', 6, 0),
-      // this.newPiece('queen', 'black', 0, 5),
-      // this.newPiece('pawn', 'white', 6, 7),
-      ];
+      this.pieces = [this.newPiece('king', 'white', 7, 4), this.newPiece('king', 'black', 0, 4), this.newPiece('queen', 'white', 7, 3), this.newPiece('queen', 'black', 0, 3), this.newPiece('rook', 'white', 7, 0), this.newPiece('rook', 'white', 7, 7), this.newPiece('rook', 'black', 0, 0), this.newPiece('rook', 'black', 0, 7), this.newPiece('knight', 'white', 7, 1), this.newPiece('knight', 'white', 7, 6), this.newPiece('knight', 'black', 0, 1), this.newPiece('knight', 'black', 0, 6), this.newPiece('bishop', 'white', 7, 2), this.newPiece('bishop', 'white', 7, 5), this.newPiece('bishop', 'black', 0, 2), this.newPiece('bishop', 'black', 0, 5), this.newPiece('pawn', 'white', 6, 0), this.newPiece('pawn', 'white', 6, 1), this.newPiece('pawn', 'white', 6, 2), this.newPiece('pawn', 'white', 6, 3), this.newPiece('pawn', 'white', 6, 4), this.newPiece('pawn', 'white', 6, 5), this.newPiece('pawn', 'white', 6, 6), this.newPiece('pawn', 'white', 6, 7), this.newPiece('pawn', 'black', 1, 0), this.newPiece('pawn', 'black', 1, 1), this.newPiece('pawn', 'black', 1, 2), this.newPiece('pawn', 'black', 1, 3), this.newPiece('pawn', 'black', 1, 4), this.newPiece('pawn', 'black', 1, 5), this.newPiece('pawn', 'black', 1, 6), this.newPiece('pawn', 'black', 1, 7)];
+      this.setKingMoved();
     },
     kingValidMoves: function kingValidMoves(board, piece, pieces, row, square, opponentPieces) {
       var king = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
@@ -5529,6 +5523,21 @@ __webpack_require__.r(__webpack_exports__);
         }
       }
       return result;
+    },
+    /**
+     * This function is used to check the starting position of the kings, and if it's different than the default position, set 'moved' to true.
+     * If we don't do this, it causes errors with the castling logic. This is particularly useful for when working with custom board setups.
+     */
+    setKingMoved: function setKingMoved() {
+      for (var i = 0; i < this.pieces.length; i++) {
+        var piece = this.pieces[i];
+        if (piece.type === 'king') {
+          var row = piece.color === 'white' ? 7 : 0;
+          if (piece.row !== row || piece.square !== 4) {
+            piece.moved = true;
+          }
+        }
+      }
     },
     queenValidMoves: function queenValidMoves(board, piece, pieces, row, square, opponentPieces) {
       var king = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;

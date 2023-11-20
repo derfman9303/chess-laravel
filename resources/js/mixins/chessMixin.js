@@ -182,15 +182,9 @@ export default {
                 this.newPiece('pawn', 'black', 1, 5),
                 this.newPiece('pawn', 'black', 1, 6),
                 this.newPiece('pawn', 'black', 1, 7),
-
-
-
-                // this.newPiece('king', 'white', 7, 4),
-                // this.newPiece('queen', 'black', 0, 3),
-                // this.newPiece('queen', 'black', 6, 0),
-                // this.newPiece('queen', 'black', 0, 5),
-                // this.newPiece('pawn', 'white', 6, 7),
             ];
+
+            this.setKingMoved();
         },
 
         kingValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {
@@ -233,6 +227,24 @@ export default {
             }
     
             return result;
+        },
+
+        /**
+         * This function is used to check the starting position of the kings, and if it's different than the default position, set 'moved' to true.
+         * If we don't do this, it causes errors with the castling logic. This is particularly useful for when working with custom board setups.
+         */
+        setKingMoved() {
+            for (let i = 0; i < this.pieces.length; i++) {
+                let piece = this.pieces[i];
+
+                if (piece.type === 'king') {
+                    const row = piece.color === 'white' ? 7 : 0;
+
+                    if (piece.row !== row || piece.square !== 4) {
+                        piece.moved = true;
+                    }
+                }
+            }
         },
     
         queenValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {

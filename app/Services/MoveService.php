@@ -16,6 +16,10 @@ class MoveService
         $this->blackKingIndex = null;
     }
 
+    /**
+     * The main function of the service. Called once per turn to generate the AI's move and returns it to the front-end.
+     * Format of returned data is [<piece index>, <new row>, <new square>]
+     */
     public function getMove($board, $pieces, $turn, $steps) {
         $totalValidPieces = $this->getValidPieces($board, $pieces, false);
         $validPieces      = $totalValidPieces[0];
@@ -318,21 +322,36 @@ class MoveService
     protected function calculateValidMoves($board, $piece, $pieces, $turn, $targeted, $targetedBoard, $king = false, $opponentPieces = []) {
         $kingIndex     = $this->getKingIndex($turn);
         $king          = $pieces[$kingIndex];
-
-        // TODO: Rename this variable
         $validMoveData = $this->checkKingTargeted($board, $pieces, $opponentPieces, $king, $targetedBoard);
 
         // TODO: The logic checking for targeted pieces is not recording the squares that are occupied by an opponent's piece but are also targeted by another opponent piece.
         // This will need to be updated because otherwise you can't know if the attacking piece can be captured by the king.
 
-        return $this->getValidMoves($board, $piece, $pieces, false, $king, $opponentPieces, $validMoveData);
+        $validMoves = $this->getValidMoves($board, $piece, $pieces, false, $king, $opponentPieces, $validMoveData);
+        $this->unsetTargetedMoves($validMoves);
+
+        return $validMoves;
+    }
+
+    /**
+     * Removes the moves with type of 'targeted'. 'Targeted' means any piece that is currently targeted by another piece of its own color.
+     * This type of move exists because in the case of determining which moves the king can make without putting itself into check, we need to know
+     * which of the opponent's pieces are targeted by themself because the king can't capture those pieces. But in the context of calculateValidMoves(),
+     * these moves should be removed because you can't capture your own piece.
+     */
+    protected function unsetTargetedMoves(&$validMoves) {
+        foreach ($validMoves as $index => $move) {
+            if ($move == 'targeted') {
+                unset($validMoves[$index]);
+            }
+        }
     }
 
     /**
      * Returns three things:
      * 1. The pieces that can only make a single valid move, which would be to capture the piece they're currently protecting the king from. (key is the piece's index, value is the row/square coords)
      * 2. (if king is currently in check) A list of squares that you can move a piece to in order to cancel the check
-     * 3. (if king is currently in check) The squares you can move your king to in order to cancel the check
+     * 3. The squares you can move your king to in order to avoid check
      * 
      * This is a lot for one function to return, but I built it this way for efficiency purposes because it can all be done at the same time
      */
@@ -348,13 +367,11 @@ class MoveService
 
         // TODO: Also check for knights and pawns
 
-        // If the king is in check, find the valid moves for the king that aren't targeted
-        if ($targetedBoard[$king['row']][$king['square']] !== 'none') {
-            $validMoves = $this->kingValidMoves($board, $king, $pieces, $opponentPieces, false);
-            $validMoves = $this->removeMovesToTargetedSquares($validMoves, $targetedBoard);
+        // Find the valid moves for the king that aren't targeted
+        $validMoves = $this->kingValidMoves($board, $king, $pieces, $opponentPieces, false);
+        $validMoves = $this->removeMovesToTargetedSquares($validMoves, $targetedBoard);
 
-            $result3 = $validMoves;
-        }
+        $result3 = $validMoves;
 
         return [$result1, $result2, $result3];
     }
@@ -733,6 +750,8 @@ class MoveService
                     $result[$r . ',' . $s] = 'highlighted';
                 } elseif ($this->getPiece($board, $pieces, $r, $s)['color'] != $piece['color']) {
                     $result[$r . ',' . $s] = 'capture';
+                } else {
+                    $result[$r . ',' . $s] = 'targeted';
                 }
             }
         }
@@ -758,10 +777,11 @@ class MoveService
                     if ($valid) {
                         break;
                     }
-                } else if ($this->getPiece($board, $pieces, $r, $s)['color'] != $piece['color']) {
+                } elseif ($this->getPiece($board, $pieces, $r, $s)['color'] != $piece['color']) {
                     $result[$r . ',' . $s] = 'capture';
                     break;
-                } else if ($this->getPiece($board, $pieces, $r, $s)['color'] == $piece['color'] && ($r != $piece['row'] || $s != $piece['square'])) {
+                } elseif ($this->getPiece($board, $pieces, $r, $s)['color'] == $piece['color'] && ($r != $piece['row'] || $s != $piece['square'])) {
+                    $result[$r . ',' . $s] = 'targeted';
                     break;
                 }
             }
@@ -779,8 +799,12 @@ class MoveService
         if ($r >= 0 && $r < 8 && $s >= 0 && $s < 8) {
             if ($capture) {
                 if (!$king ? true : ($this->doesMoveCauseCheck($board, $king, $piece, $pieces, $opponentPieces, $r, $s, $validMoveData) == false)) {
-                    if ($board[$r][$s] !== "empty" && $this->getPiece($board, $pieces, $r, $s)['color'] != $piece['color']) {
-                        $result[$r . ',' . $s] = 'capture';
+                    if ($board[$r][$s] !== "empty") {
+                        if ($this->getPiece($board, $pieces, $r, $s)['color'] != $piece['color']) {
+                            $result[$r . ',' . $s] = 'capture';
+                        } else {
+                            $result[$r . ',' . $s] = 'targeted';
+                        }
                     }
                 }
             } else {
@@ -868,7 +892,7 @@ class MoveService
 
             // Move the rook
             $this->movePiece($row, $square - 2, $pieces[$rookIndex], $pieces, $rookIndex, $board);
-        } else if ($square == 0) {
+        } elseif ($square == 0) {
             // Move the king
             $this->movePiece($row, $square + 2, $pieces[$piece], $pieces, $piece, $board);
 
@@ -929,7 +953,7 @@ class MoveService
                 return true;
             }
         } else {
-            // If the piece is the king, and the move we're checking is not one of the found valid moves for the king that cancel the check
+            // If the piece is the king, and the move we're checking is not one of the found valid moves for the king that avoid check
             if (!in_array(($r . ',' . $s), array_keys($data3))) {
                 return true;
             }
@@ -1023,41 +1047,5 @@ class MoveService
                 $s++;
                 break;
         }
-    }
-
-    /**
-     * Returns true if the opponent has a piece currently targeting your king (king is in check)
-     * 
-     * @param {*} king 
-     * @param {*} opponentPieces 
-     * @param {*} r 
-     * @param {*} s 
-     * @returns
-     */
-    protected function kingTargeted($board, $king, $pieces, $opponentPieces) {
-        if (count($opponentPieces) > 0) {
-            foreach ($opponentPieces as $opponentPieceIndex) {
-                $opponentPiece = $pieces[$opponentPieceIndex];
-
-                if (!$opponentPiece['captured']) {
-                    $validMoves    = $this->getValidMoves($board, $opponentPiece, $pieces);
-                    $validMoveKeys = array_keys($validMoves);
-    
-                    foreach ($validMoveKeys as $m) {
-                        if ($validMoves[$m] == 'capture') {
-                            $splitKey = explode(',', $m);
-                            $row      = intval($splitKey[0]);
-                            $square   = intval($splitKey[1]);
-    
-                            if ($row == $king['row'] && $square == $king['square']) {
-                                return true;
-                            }
-                        }
-                    } 
-                }               
-            }
-        }
-
-        return false;
     }
 }
