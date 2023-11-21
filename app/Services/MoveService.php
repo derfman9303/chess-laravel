@@ -21,12 +21,13 @@ class MoveService
      * Format of returned data is [<piece index>, <new row>, <new square>]
      */
     public function getMove($board, $pieces, $turn, $steps) {
+        $result           = [];
+        $availableMoves   = [];
         $totalValidPieces = $this->getValidPieces($board, $pieces, false);
         $validPieces      = $totalValidPieces[0];
         $opponentPieces   = $totalValidPieces[1];
         $king             = $totalValidPieces[2];
         $opponentKing     = $totalValidPieces[3];
-        $availableMoves   = [];
 
         // Defining these as class properties so that the kingTargeted logic doesn't need to iterate over all the pieces to find the kings a second time
         $this->blackKingIndex = $king['index'];
@@ -79,8 +80,6 @@ class MoveService
                     }
                 }
             }
-        } else {
-            return false;
         }
 
         if (count($availableMoves) > 0) {
@@ -99,13 +98,11 @@ class MoveService
                 $randomIndex  = floor(rand(0, count($preferredMoveKeys) - 1));
                 $selectedMove = explode(',', $preferredMoveKeys[$randomIndex]);
                 
-                return [$board[$selectedMove[0]][$selectedMove[1]], $selectedMove[2], $selectedMove[3]];
-            } else {
-                return false;
+                $result = [$board[$selectedMove[0]][$selectedMove[1]], $selectedMove[2], $selectedMove[3]];
             }
-        } else {
-            return false;
         }
+
+        return $result;
     }
 
     protected function mini($board, $pieces, $steps) {
