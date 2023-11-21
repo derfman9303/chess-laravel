@@ -83,22 +83,26 @@ class MoveService
             return false;
         }
 
-        $min = min($availableMoves);
-        $preferredMoves = [];
-
-        foreach ($availableMoves as $index => $move) {
-            if ($move == $min) {
-                $preferredMoves[$index] = $move;
+        if (count($availableMoves) > 0) {
+            $min = min($availableMoves);
+            $preferredMoves = [];
+    
+            foreach ($availableMoves as $index => $move) {
+                if ($move == $min) {
+                    $preferredMoves[$index] = $move;
+                }
             }
-        }
-
-        $preferredMoveKeys = array_keys($preferredMoves);
-
-        if (count($preferredMoveKeys) > 0) {
-            $randomIndex  = floor(rand(0, count($preferredMoveKeys) - 1));
-            $selectedMove = explode(',', $preferredMoveKeys[$randomIndex]);
-            
-            return [$board[$selectedMove[0]][$selectedMove[1]], $selectedMove[2], $selectedMove[3]];
+    
+            $preferredMoveKeys = array_keys($preferredMoves);
+    
+            if (count($preferredMoveKeys) > 0) {
+                $randomIndex  = floor(rand(0, count($preferredMoveKeys) - 1));
+                $selectedMove = explode(',', $preferredMoveKeys[$randomIndex]);
+                
+                return [$board[$selectedMove[0]][$selectedMove[1]], $selectedMove[2], $selectedMove[3]];
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
@@ -512,6 +516,10 @@ class MoveService
         // $p is the piece index, not the piece object
         foreach ($opponentPieces as $p) {
             $result = array_merge($this->getValidMoves($board, $pieces[$p], $pieces), $result);
+
+            if ($pieces[$p]['type'] == 'pawn') {
+                $result = array_merge($this->getTargetedSquaresPawn($board, $pieces[$p], $pieces, $opponentPieces), $result);
+            }
         }
 
         return $result;
@@ -830,6 +838,47 @@ class MoveService
                         $result[$r . ',' . $s] = 'highlighted';
                     }
                 }
+            }
+        }
+
+        return $result;
+    }
+
+    protected function getTargetedSquaresPawn($board, $piece, $pieces, $opponentPieces) {
+        $result = [];
+        $row    = $piece['row'];
+        $square = $piece['square'];
+
+        if ($piece['color'] == "white") {
+            // capture left
+            $result = array_merge($this->findTargetedSquaresPawn($board, $piece, $pieces, $opponentPieces, $row - 1, $square - 1), $result);
+
+            // capture right
+            $result = array_merge($this->findTargetedSquaresPawn($board, $piece, $pieces, $opponentPieces, $row - 1, $square + 1), $result);
+        } else {
+            // capture left
+            $result = array_merge($this->findTargetedSquaresPawn($board, $piece, $pieces, $opponentPieces, $row + 1, $square - 1), $result);
+
+            // capture right
+            $result = array_merge($this->findTargetedSquaresPawn($board, $piece, $pieces, $opponentPieces, $row + 1, $square + 1), $result);
+        }
+
+        return $result;
+    }
+
+    /**
+     * This function will flag the pawn's targeted squares, because the pawnValidMoves() function will only flag the pawn's targeted squares if there is already a piece there.
+     * That's problematic when checking which squares the king can move to, because if the square is empty then the king would think that it's a valid square to move to.
+     * Separated this logic from pawnValidMoves() to avoid complicating that function any more
+     */
+    protected function findTargetedSquaresPawn($board, $piece, $pieces, $opponentPieces, $row, $square) {
+        $result = [];
+
+        // Check if r/s coordinates are within the board
+        if ($row >= 0 && $row < 8 && $square >= 0 && $square < 8) {
+            // If the square we're checking ins't occupied by an opponent's piece, because that would already be flagged as capture.
+            if (!($board[$row][$square] !== 'empty' && $this->getPiece($board, $pieces, $row, $square)['color'] != $piece['color'])) {
+                $result[$row . ',' . $square] = 'highlighted';
             }
         }
 
