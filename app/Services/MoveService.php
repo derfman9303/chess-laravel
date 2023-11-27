@@ -33,15 +33,16 @@ class MoveService
         $this->blackKingIndex = $king['index'];
         $this->whiteKingIndex = $opponentKing['index'];
 
-        $targeted      = $this->getTargetedSquares($board, $pieces, $opponentPieces);
-        $targetedBoard = $this->markTargetedSquaresOnBoard($targeted);
-
         if (count($validPieces) > 0) {
+            $targeted      = $this->getTargetedSquares($board, $pieces, $opponentPieces);
+            $targetedBoard = $this->markTargetedSquaresOnBoard($targeted);
+            $validMoveData = $this->checkKingTargeted($board, $pieces, $opponentPieces, $king, $targetedBoard);
+
             foreach ($validPieces as $validPieceIndex) {
                 $piece      = $pieces[$validPieceIndex];
                 $oldRow     = $piece['row'];
                 $oldSquare  = $piece['square'];
-                $validMoves = $this->calculateValidMoves($board, $piece, $pieces, false, $targeted, $targetedBoard, $king, $opponentPieces);
+                $validMoves = $this->calculateValidMoves($board, $piece, $pieces, false, $validMoveData, $king, $opponentPieces);
                 $moveKeys   = array_keys($validMoves);
 
                 foreach ($moveKeys as $moveKey) {
@@ -115,15 +116,16 @@ class MoveService
             $king             = $totalValidPieces[2]; 
             $min              = null;
 
-            $targeted      = $this->getTargetedSquares($board, $pieces, $opponentPieces);
-            $targetedBoard = $this->markTargetedSquaresOnBoard($targeted);
-
             if (count($validPieces) > 0) {
+                $targeted      = $this->getTargetedSquares($board, $pieces, $opponentPieces);
+                $targetedBoard = $this->markTargetedSquaresOnBoard($targeted);
+                $validMoveData = $this->checkKingTargeted($board, $pieces, $opponentPieces, $king, $targetedBoard);
+
                 foreach ($validPieces as $validPieceIndex) {
                     $piece      = $pieces[$validPieceIndex];
                     $oldRow     = $piece['row'];
                     $oldSquare  = $piece['square'];
-                    $validMoves = $this->calculateValidMoves($board, $piece, $pieces, false, $targeted, $targetedBoard, $king, $opponentPieces);
+                    $validMoves = $this->calculateValidMoves($board, $piece, $pieces, false, $validMoveData, $king, $opponentPieces);
                     $moveKeys   = array_keys($validMoves);
     
                     foreach ($moveKeys as $moveKey) {
@@ -194,15 +196,16 @@ class MoveService
             $king             = $totalValidPieces[2];
             $max              = null;
 
-            $targeted      = $this->getTargetedSquares($board, $pieces, $opponentPieces);
-            $targetedBoard = $this->markTargetedSquaresOnBoard($targeted);
-
             if (count($validPieces) > 0) {
+                $targeted      = $this->getTargetedSquares($board, $pieces, $opponentPieces);
+                $targetedBoard = $this->markTargetedSquaresOnBoard($targeted);
+                $validMoveData = $this->checkKingTargeted($board, $pieces, $opponentPieces, $king, $targetedBoard);
+
                 foreach ($validPieces as $validPieceIndex) {
                     $piece      = $pieces[$validPieceIndex];
                     $oldRow     = $piece['row'];
                     $oldSquare  = $piece['square'];
-                    $validMoves = $this->calculateValidMoves($board, $piece, $pieces, true, $targeted, $targetedBoard, $king, $opponentPieces);
+                    $validMoves = $this->calculateValidMoves($board, $piece, $pieces, true, $validMoveData, $king, $opponentPieces);
                     $moveKeys   = array_keys($validMoves);
     
                     foreach ($moveKeys as $moveKey) {
@@ -330,12 +333,7 @@ class MoveService
     /**
      * The main function for calculating the valid moves for a given piece, specifically when being called from the mini-max algorithm.
      */
-    protected function calculateValidMoves($board, $piece, $pieces, $turn, $targeted, $targetedBoard, $king = false, $opponentPieces = []) {
-        $kingIndex     = $this->getKingIndex($turn);
-        $king          = $pieces[$kingIndex];
-        // TODO: This function only needs to be ran once, not for every piece??
-        $validMoveData = $this->checkKingTargeted($board, $pieces, $opponentPieces, $king, $targetedBoard);
-
+    protected function calculateValidMoves($board, $piece, $pieces, $turn, $validMoveData, $king = false, $opponentPieces = []) {
         // TODO: The logic checking for targeted pieces is not recording the squares that are occupied by an opponent's piece but are also targeted by another opponent piece.
         // This will need to be updated because otherwise you can't know if the attacking piece can be captured by the king.
 
