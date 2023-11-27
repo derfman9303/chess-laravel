@@ -9,7 +9,15 @@
             <directory suffix="Test.php">./tests/Unit</directory>
         </testsuite>
         <testsuite name="Feature">
-            <directory suffix="Test.php">./tests/Feature</directory>
+            <!-- Include all files in the feature folder that end in Test.php -->
+            <!-- <directory suffix="Test.php">./tests/Feature</directory> -->
+            
+            <file>./tests/Feature/BishopMustBlockAttackingPieceTest.php</file>
+            <file>./tests/Feature/BishopMustCaptureAttackingPieceTest.php</file>
+            <file>./tests/Feature/KingCannotCaptureTargetedPieceTest.php</file>
+            <file>./tests/Feature/KingCannotMoveOppositeAttackingPieceTest.php</file>
+            <file>./tests/Feature/KingMustCancelCheckTest.php</file>
+            <file>./tests/Feature/KingMustMoveOutOfCheckKnightTest.php</file>
         </testsuite>
     </testsuites>
     <coverage processUncoveredFiles="true">

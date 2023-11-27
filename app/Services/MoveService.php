@@ -171,6 +171,11 @@ class MoveService
                     }
                 }
 
+                if (is_null($min)) {
+                    // TODO: does this mean checkmate?
+                    return $this->getBoardValue($pieces);
+                }
+
                 return $min;
             } else {
                 return false;
@@ -186,7 +191,7 @@ class MoveService
             $validPieces      = $totalValidPieces[0];
             // TODO: These are not defined in the original version. Why?
             $opponentPieces   = $totalValidPieces[1];
-            $king             = $totalValidPieces[2]; 
+            $king             = $totalValidPieces[2];
             $max              = null;
 
             $targeted      = $this->getTargetedSquares($board, $pieces, $opponentPieces);
@@ -197,7 +202,7 @@ class MoveService
                     $piece      = $pieces[$validPieceIndex];
                     $oldRow     = $piece['row'];
                     $oldSquare  = $piece['square'];
-                    $validMoves = $this->calculateValidMoves($board, $piece, $pieces, false, $targeted, $targetedBoard, $king, $opponentPieces);
+                    $validMoves = $this->calculateValidMoves($board, $piece, $pieces, true, $targeted, $targetedBoard, $king, $opponentPieces);
                     $moveKeys   = array_keys($validMoves);
     
                     foreach ($moveKeys as $moveKey) {
@@ -244,6 +249,12 @@ class MoveService
                         }
                     }
                 }
+
+                if (is_null($max)) {
+                    // TODO: does this mean checkmate?
+                    return $this->getBoardValue($pieces);
+                }
+
                 return $max;
             } else {
                 return false;
@@ -251,10 +262,9 @@ class MoveService
         }
     }
 
-        /**
-     * Adds up the total value of all pieces on the board
+    /**
+     * Adds up the total value of all pieces on the board to get the score
      * @param {*} pieces 
-     * @returns 
      */
     protected function getBoardValue($pieces) {
         $result = 0;
@@ -323,6 +333,7 @@ class MoveService
     protected function calculateValidMoves($board, $piece, $pieces, $turn, $targeted, $targetedBoard, $king = false, $opponentPieces = []) {
         $kingIndex     = $this->getKingIndex($turn);
         $king          = $pieces[$kingIndex];
+        // TODO: This function only needs to be ran once, not for every piece??
         $validMoveData = $this->checkKingTargeted($board, $pieces, $opponentPieces, $king, $targetedBoard);
 
         // TODO: The logic checking for targeted pieces is not recording the squares that are occupied by an opponent's piece but are also targeted by another opponent piece.
@@ -349,22 +360,36 @@ class MoveService
     }
 
     /**
-     * Returns three things:
+     * Returns four things:
      * 1. The pieces that can only make a single valid move, which would be to capture the piece they're currently protecting the king from. (key is the piece's index, value is the row/square coords)
      * 2. (if king is currently in check) A list of squares that you can move a piece to in order to cancel the check
      * 3. The squares you can move your king to in order to avoid check
+     * 4. Whether the king is currently in check (true/false)
      * 
      * This is a lot for one function to return, but I built it this way for efficiency purposes because it can all be done at the same time
      */
     protected function checkKingTargeted($board, $pieces, $opponentPieces, $king, $targetedBoard) {
-        $result1 = [];
-        $result2 = [];
-        $result3 = [];
-
+        $result1         = [];
+        $result2         = [];
+        $result3         = [];
+        $result4         = false;
         $attackingPieces = [];
 
-        $this->checkKingTargetedLoop($board, $pieces, 'straight', $king, $result1, $result2);
-        $this->checkKingTargetedLoop($board, $pieces, 'diagonal', $king, $result1, $result2);
+        $this->findAttackingPiecesLoop($board, $pieces, 'straight', $king, $attackingPieces, $result1, $result2);
+        $this->findAttackingPiecesLoop($board, $pieces, 'diagonal', $king, $attackingPieces, $result1, $result2);
+        $this->findAttackingPiecesKnight($board, $pieces, $king, $attackingPieces);
+        // TODO: Add a function to find attacking pawns
+
+        // If there are multiple pieces attacking your king, the only way to cancel the check is to move your king
+        if (count($attackingPieces) > 1) {
+            $result1 = [];
+            $result2 = [];
+        }
+
+        // Is the king currently in check?
+        if ($targetedBoard[$king['row']][$king['square']] !== "none") {
+            $result4 = true;
+        }
 
         // TODO: Also check for knights and pawns
 
@@ -374,10 +399,10 @@ class MoveService
 
         $result3 = $validMoves;
 
-        return [$result1, $result2, $result3];
+        return [$result1, $result2, $result3, $result4];
     }
 
-    protected function checkKingTargetedLoop($board, $pieces, $directionType, $king, &$result1, &$result2) {
+    protected function findAttackingPiecesLoop($board, $pieces, $directionType, $king, &$attackingPieces, &$result1, &$result2): void {
         $straight       = ['up', 'down', 'left', 'right'];
         $diagonal       = ['up/right', 'up/left', 'down/right', 'down/left'];
         $searchForPiece = null;
@@ -444,9 +469,46 @@ class MoveService
             // If no attacking piece was found, then we don't need to track which squares you can move to in order to cancel the check
             if (is_null($attackingPiece)) {
                 $highlighted = [];
+            } else {
+                $attackingPieces[] = $attackingPiece;
             }
 
             $result2 = array_merge($highlighted, $result2);
+        }
+    }
+
+    protected function findAttackingPiecesKnight($board, $pieces, $king, &$attackingPieces): void {
+        $row    = $king['row'];
+        $square = $king['square'];
+
+        $moves = [
+            ($row - 2) . ',' . ($square - 1), // up 1
+            ($row - 2) . ',' . ($square + 1), // up 2
+            ($row + 2) . ',' . ($square - 1), //down 1
+            ($row + 2) . ',' . ($square + 1), // down 2
+            ($row + 1) . ',' . ($square - 2), // left 1
+            ($row - 1) . ',' . ($square - 2), // left 2
+            ($row - 1) . ',' . ($square + 2), // right 1
+            ($row + 1) . ',' . ($square + 2), // right 2
+        ];
+
+        // Check for knights attacking the king.
+        foreach ($moves as $moveString) {
+            $exploded = explode(',', $moveString);
+            $r        = $exploded[0];
+            $s        = $exploded[1];
+    
+            // Check if r/s coordinates are still within the board
+            if ($r >= 0 && $r < 8 && $s >= 0 && $s < 8) {
+
+                if ($board[$r][$s] !== 'empty') {
+                    $pieceInQuestion = $this->getPiece($board, $pieces, $r, $s);
+
+                    if ($pieceInQuestion['color'] != $king['color'] && $pieceInQuestion['type'] == 'knight') {
+                        $attackingPieces[] = $pieceInQuestion['index'];
+                    }
+                }
+            }
         }
     }
 
@@ -750,7 +812,7 @@ class MoveService
         if ($r >= 0 && $r < 8 && $s >= 0 && $s < 8) {
             // If king is set, check if the move in question would result in the king being targeted. Otherwise, equate to true so that the checkmate logic is ignored.
             // We can ignore it because if you can make a move on your turn to capture the opponent's $king, you don't need to worry about putting yourself in check or checkmate because the game ends.
-            if (!$king ? true : ($this->doesMoveCauseCheck($board, $king, $piece, $pieces, $opponentPieces, $r, $s, $validMoveData) == false)) {
+            if (!$king ? true : ($this->doesMoveCauseCheck($board, $king, $piece, $pieces, $opponentPieces, $r, $s, $validMoveData) === false)) {
                 if ($board[$r][$s] === "empty") {
                     $result[$r . ',' . $s] = 'highlighted';
                 } elseif ($this->getPiece($board, $pieces, $r, $s)['color'] != $piece['color']) {
@@ -995,12 +1057,14 @@ class MoveService
      * $data1: The pieces that can only make a single valid move, which would be to capture the piece they're currently protecting the king from. (key is the piece's index, value is the row/square coords)
      * $data2: (if king is currently in check) A list of squares that you can move a piece to in order to cancel the check
      * $data3: (if king is currently in check) The squares you can move your king to in order to cancel the check
+     * $data4: Whether the king is currently in check (true/false)
      */
     protected function doesMoveCauseCheck($board, $king, $piece, $pieces, $opponentPieces, $r, $s, $validMoveData) {
 
         $data1 = $validMoveData[0];
         $data2 = $validMoveData[1];
         $data3 = $validMoveData[2];
+        $data4 = $validMoveData[3];
 
         if ($piece['type'] !== 'king') {
             // If the piece is one that can only make a single valid move, to capture a blocked attacking piece
@@ -1013,6 +1077,9 @@ class MoveService
 
             // Else if the move we're checking is not one of the moves that would cancel check
             } elseif (!empty($data2) && !in_array(($r . ',' . $s), $data2)) {
+                return true;
+            // Else if the king is in check and the piece has no moves to cancel the check
+            } elseif ($data4 && empty($data1) && empty($data2)) {
                 return true;
             }
         } else {
