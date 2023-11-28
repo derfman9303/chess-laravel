@@ -17,7 +17,7 @@ class MoveService
     }
 
     /**
-     * The main function of the service. Called once per turn to generate the AI's move and returns it to the front-end.
+     * The main function of the service. Called once per turn to generate the AI's move to be returned to the front-end.
      * Format of returned data is [<piece index>, <new row>, <new square>]
      */
     public function getMove($board, $pieces, $turn, $steps) {
