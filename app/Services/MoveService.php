@@ -349,7 +349,7 @@ class MoveService
      * which of the opponent's pieces are targeted by themself because the king can't capture those pieces. But in the context of calculateValidMoves(),
      * these moves should be removed because you can't capture your own piece.
      */
-    protected function unsetTargetedMoves(&$validMoves) {
+    protected function unsetTargetedMoves(&$validMoves): void {
         foreach ($validMoves as $index => $move) {
             if ($move == 'targeted') {
                 unset($validMoves[$index]);
@@ -997,7 +997,7 @@ class MoveService
         return false;
     }
 
-    protected function castle($row, $square, $piece, $board, $pieces) {
+    protected function castle($row, $square, $piece, $board, $pieces): void {
 
         // Identify the rook to be castled
         $rookIndex = $board[$row][$square];
@@ -1021,7 +1021,7 @@ class MoveService
         }
     }
 
-    protected function unCastle($king, $rook, $rookOldRow, $rookOldSquare, $kingOldRow, $kingOldSquare, &$board, &$pieces) {
+    protected function unCastle($king, $rook, $rookOldRow, $rookOldSquare, $kingOldRow, $kingOldSquare, &$board, &$pieces): void {
         $this->movePiece($rookOldRow, $rookOldSquare, $rook, $pieces, $rook['index'], $board);
         $this->movePiece($kingOldRow, $kingOldSquare, $king, $pieces, $king['index'], $board);
 
@@ -1102,7 +1102,7 @@ class MoveService
         return $result;
     }
 
-    protected function unCapturePiece($captured, $row, $square, &$board, &$pieces) {
+    protected function unCapturePiece($captured, $row, $square, &$board, &$pieces):  void {
         if ($captured != false) {
             $piece = $pieces[$captured];
             $moved = $piece['moved'];
@@ -1114,7 +1114,7 @@ class MoveService
         }
     }
 
-    protected function movePiece($row, $square, &$piece, &$pieces, $index, &$board) {
+    protected function movePiece($row, $square, &$piece, &$pieces, $index, &$board): void {
         // Check if capture
         if ($board[$row][$square] != 'empty') {
             $capturedPiece           = $this->getPiece($board, $pieces, $row, $square);
@@ -1141,7 +1141,7 @@ class MoveService
         $pieces[$piece['index']]['moved']  = true;
     }
 
-    protected function updateCoordsByDirection(&$r, &$s, $direction) {
+    protected function updateCoordsByDirection(&$r, &$s, $direction): void {
         switch ($direction) {
             case 'up':
                 $r--;
