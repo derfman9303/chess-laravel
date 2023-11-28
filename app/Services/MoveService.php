@@ -97,7 +97,7 @@ class MoveService
     
             if (count($preferredMoveKeys) > 0) {
                 $randomIndex  = floor(rand(0, count($preferredMoveKeys) - 1));
-                $selectedMove = explode(',', $preferredMoveKeys[$randomIndex]);
+                $selectedMove = array_map('intval', explode(',', $preferredMoveKeys[$randomIndex]));
                 
                 $result = [$board[$selectedMove[0]][$selectedMove[1]], $selectedMove[2], $selectedMove[3]];
             }
