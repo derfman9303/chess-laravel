@@ -618,20 +618,19 @@ class MoveService
         $square = $piece['square'];
 
         $moves = [
-            ($row - 1) . ',' . $square, // up
-            ($row + 1) . ',' . $square, // down
-            $row . ',' . ($square - 1), // left
-            $row . ',' . ($square + 1), // right
-            ($row - 1) . ',' . ($square - 1), // up/left diagonal
-            ($row - 1) . ',' . ($square + 1), // up/right diagonal
-            ($row + 1) . ',' . ($square - 1), // down/left diagonal
-            ($row + 1) . ',' . ($square + 1), // down/right diagonal
+            [$row - 1, $square], // up
+            [$row + 1, $square], // down
+            [$row, $square - 1], // left
+            [$row, $square + 1], // right
+            [$row - 1, $square - 1], // up/left diagonal
+            [$row - 1, $square + 1], // up/right diagonal
+            [$row + 1, $square - 1], // down/left diagonal
+            [$row + 1, $square + 1], // down/right diagonal
         ];
 
         foreach ($moves as $move) {
-            $exploded = explode(',', $move);
-            $row      = $exploded[0];
-            $square   = $exploded[1];
+            $row    = $move[0];
+            $square = $move[1];
 
             $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $validMoveData), $result);
 
@@ -738,20 +737,19 @@ class MoveService
         $square = $piece['square'];
 
         $moves = [
-            ($row - 2) . ',' . ($square - 1), // up 1
-            ($row - 2) . ',' . ($square + 1), // up 2
-            ($row + 2) . ',' . ($square - 1), //down 1
-            ($row + 2) . ',' . ($square + 1), // down 2
-            ($row + 1) . ',' . ($square - 2), // left 1
-            ($row - 1) . ',' . ($square - 2), // left 2
-            ($row - 1) . ',' . ($square + 2), // right 1
-            ($row + 1) . ',' . ($square + 2), // right 2
+            [$row - 2, $square - 1], // up 1
+            [$row - 2, $square + 1], // up 2
+            [$row + 2, $square - 1], //down 1
+            [$row + 2, $square + 1], // down 2
+            [$row + 1, $square - 2], // left 1
+            [$row - 1, $square - 2], // left 2
+            [$row - 1, $square + 2], // right 1
+            [$row + 1, $square + 2], // right 2
         ];
 
         foreach ($moves as $move) {
-            $exploded = explode(',', $move);
-            $row      = $exploded[0];
-            $square   = $exploded[1];
+            $row    = $move[0];
+            $square = $move[1];
 
             $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $validMoveData), $result);
 
