@@ -33,6 +33,5 @@ class KingMustMoveOutOfCheckKnightTest extends TestCase
         ]);
 
         $this->assertEquals([0, 4, 3], $response->json());
-
     }
 }

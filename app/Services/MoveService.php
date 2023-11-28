@@ -480,21 +480,20 @@ class MoveService
         $square = $king['square'];
 
         $moves = [
-            ($row - 2) . ',' . ($square - 1), // up 1
-            ($row - 2) . ',' . ($square + 1), // up 2
-            ($row + 2) . ',' . ($square - 1), //down 1
-            ($row + 2) . ',' . ($square + 1), // down 2
-            ($row + 1) . ',' . ($square - 2), // left 1
-            ($row - 1) . ',' . ($square - 2), // left 2
-            ($row - 1) . ',' . ($square + 2), // right 1
-            ($row + 1) . ',' . ($square + 2), // right 2
+            [$row - 2, $square - 1], // up 1
+            [$row - 2, $square + 1], // up 2
+            [$row + 2, $square - 1], //down 1
+            [$row + 2, $square + 1], // down 2
+            [$row + 1, $square - 2], // left 1
+            [$row - 1, $square - 2], // left 2
+            [$row - 1, $square + 2], // right 1
+            [$row + 1, $square + 2], // right 2
         ];
 
         // Check for knights attacking the king.
-        foreach ($moves as $moveString) {
-            $exploded = explode(',', $moveString);
-            $r        = $exploded[0];
-            $s        = $exploded[1];
+        foreach ($moves as $move) {
+            $r = $move[0];
+            $s = $move[1];
     
             // Check if r/s coordinates are still within the board
             if ($r >= 0 && $r < 8 && $s >= 0 && $s < 8) {
