@@ -263,7 +263,7 @@
     * The below classes use div because they need higher specificity to take precedence over the previous-move class
     */
     div.highlighted {
-        border: 4px solid #c2b849;
+        border: 4px solid #e3d756;
     }
 
     div.capture {

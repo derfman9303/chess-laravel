@@ -375,8 +375,8 @@ class MoveService
 
         $this->findAttackingPiecesLoop($board, $pieces, 'straight', $king, $attackingPieces, $result1, $result2);
         $this->findAttackingPiecesLoop($board, $pieces, 'diagonal', $king, $attackingPieces, $result1, $result2);
-        $this->findAttackingPiecesKnight($board, $pieces, $king, $attackingPieces);
-        // TODO: Add a function to find attacking pawns
+        $this->findAttackingPiecesKnight($board, $pieces, $king, $attackingPieces, $result2);
+        $this->findAttackingPiecesPawn($board, $pieces, $king, $attackingPieces, $result2);
 
         // If there are multiple pieces attacking your king, the only way to cancel the check is to move your king
         if (count($attackingPieces) > 1) {
@@ -388,8 +388,6 @@ class MoveService
         if ($targetedBoard[$king['row']][$king['square']] !== "none") {
             $result4 = true;
         }
-
-        // TODO: Also check for knights and pawns
 
         // Find the valid moves for the king that aren't targeted
         $validMoves = $this->kingValidMoves($board, $king, $pieces, $opponentPieces, false);
@@ -475,7 +473,42 @@ class MoveService
         }
     }
 
-    protected function findAttackingPiecesKnight($board, $pieces, $king, &$attackingPieces): void {
+    protected function findAttackingPiecesPawn($board, $pieces, $king, &$attackingPieces, &$result2): void {
+        $row    = $king['row'];
+        $square = $king['square'];
+
+        $moves = [
+            [$row + 1, $square - 1], // down/left diagonal
+            [$row + 1, $square + 1], // down/right diagonal
+        ];
+
+        if ($king['color'] == 'white') {
+            $moves = [
+                [$row - 1, $square - 1], // up/left diagonal
+                [$row - 1, $square + 1], // up/right diagonal
+            ];
+        }
+
+        foreach ($moves as $move) {
+            $r = $move[0];
+            $s = $move[1];
+    
+            // Check if r/s coordinates are still within the board
+            if ($r >= 0 && $r < 8 && $s >= 0 && $s < 8) {
+
+                if ($board[$r][$s] !== 'empty') {
+                    $pieceInQuestion = $this->getPiece($board, $pieces, $r, $s);
+
+                    if ($pieceInQuestion['color'] != $king['color'] && $pieceInQuestion['type'] == 'pawn') {
+                        $attackingPieces[] = $pieceInQuestion['index'];
+                        $result2[] = $r . ',' . $s;
+                    }
+                }
+            }
+        }
+    }
+
+    protected function findAttackingPiecesKnight($board, $pieces, $king, &$attackingPieces, &$result2): void {
         $row    = $king['row'];
         $square = $king['square'];
 
@@ -503,6 +536,7 @@ class MoveService
 
                     if ($pieceInQuestion['color'] != $king['color'] && $pieceInQuestion['type'] == 'knight') {
                         $attackingPieces[] = $pieceInQuestion['index'];
+                        $result2[] = $r . ',' . $s;
                     }
                 }
             }
@@ -563,18 +597,19 @@ class MoveService
     }
 
     /**
-     * This function in its current state should only be used to calculate the opponent's taargeted squares, because it's not running the kingTargeted logic.
-     * For the player whose turn it is, they can only make a move if it doesn't put their own king into check.
+     * This function in its current state should only be used to calculate the opponent's targeted squares, because it's not running the checkKingTargeted logic.
+     * For the player whose turn it is, they can only make a move if it doesn't put their own king into check, which this function doesn't take into account.
      */
     protected function getTargetedSquares($board, $pieces, $opponentPieces) {
         $result = [];
 
         // $p is the piece index, not the piece object
         foreach ($opponentPieces as $p) {
-            $result = array_merge($this->getValidMoves($board, $pieces[$p], $pieces), $result);
-
             if ($pieces[$p]['type'] == 'pawn') {
+                // Pawns capture different than they move, so getValidMoves() won't work for them
                 $result = array_merge($this->getTargetedSquaresPawn($board, $pieces[$p], $pieces, $opponentPieces), $result);
+            } else {
+                $result = array_merge($this->getValidMoves($board, $pieces[$p], $pieces), $result);
             }
         }
 
@@ -898,41 +933,35 @@ class MoveService
         return $result;
     }
 
-    protected function getTargetedSquaresPawn($board, $piece, $pieces, $opponentPieces) {
-        $result = [];
-        $row    = $piece['row'];
-        $square = $piece['square'];
-
-        if ($piece['color'] == "white") {
-            // capture left
-            $result = array_merge($this->findTargetedSquaresPawn($board, $piece, $pieces, $opponentPieces, $row - 1, $square - 1), $result);
-
-            // capture right
-            $result = array_merge($this->findTargetedSquaresPawn($board, $piece, $pieces, $opponentPieces, $row - 1, $square + 1), $result);
-        } else {
-            // capture left
-            $result = array_merge($this->findTargetedSquaresPawn($board, $piece, $pieces, $opponentPieces, $row + 1, $square - 1), $result);
-
-            // capture right
-            $result = array_merge($this->findTargetedSquaresPawn($board, $piece, $pieces, $opponentPieces, $row + 1, $square + 1), $result);
-        }
-
-        return $result;
-    }
-
     /**
      * This function will flag the pawn's targeted squares, because the pawnValidMoves() function will only flag the pawn's targeted squares if there is already a piece there.
      * That's problematic when checking which squares the king can move to, because if the square is empty then the king would think that it's a valid square to move to.
      * Separated this logic from pawnValidMoves() to avoid complicating that function any more
      */
-    protected function findTargetedSquaresPawn($board, $piece, $pieces, $opponentPieces, $row, $square) {
+    protected function getTargetedSquaresPawn($board, $piece, $pieces, $opponentPieces) {
         $result = [];
+        $row    = $piece['row'];
+        $square = $piece['square'];
 
-        // Check if r/s coordinates are within the board
-        if ($row >= 0 && $row < 8 && $square >= 0 && $square < 8) {
-            // If the square we're checking ins't occupied by an opponent's piece, because that would already be flagged as capture.
-            if (!($board[$row][$square] !== 'empty' && $this->getPiece($board, $pieces, $row, $square)['color'] != $piece['color'])) {
-                $result[$row . ',' . $square] = 'highlighted';
+        $moves = [
+            [$row + 1, $square - 1], // capture left
+            [$row + 1, $square + 1], // capture right
+        ];
+
+        if ($piece['color'] == 'white') {
+            $moves = [
+                [$row - 1, $square - 1], // capture left
+                [$row - 1, $square + 1], // capture right
+            ];
+        }
+
+        foreach ($moves as $move) {
+            $r = $move[0];
+            $s = $move[1];
+
+            // Check if r/s coordinates are within the board
+            if ($r >= 0 && $r < 8 && $s >= 0 && $s < 8) {
+                $result[$r . ',' . $s] = 'targeted';
             }
         }
 
