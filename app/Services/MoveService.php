@@ -699,7 +699,7 @@ class MoveService
             $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $validMoveData), $result);
 
             // If called from getValidPieces() and a valid move is found, we can stop the iteration because we already know the piece is valid
-            if ($valid && count($result) > 0) {
+            if ($valid && !empty($result)) {
                 break;
             }
         }
@@ -739,7 +739,7 @@ class MoveService
             $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $move, $valid, $validMoveData), $result);
 
             // If called from getValidPieces() and a valid move is found, we can stop the iteration because we already know the piece is valid
-            if ($valid && count($result) > 0) {
+            if ($valid && !empty($result)) {
                 break;
             }
         }
@@ -763,7 +763,7 @@ class MoveService
             $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $move, $valid, $validMoveData), $result);
 
             // If called from getValidPieces() and a valid move is found, we can stop the iteration because we already know the piece is valid
-            if ($valid && count($result) > 0) {
+            if ($valid && !empty($result)) {
                 break;
             }
         }
@@ -787,7 +787,7 @@ class MoveService
             $result = array_merge($this->findValidMovesLoop($board, $king, $piece, $pieces, $opponentPieces, $move, $valid, $validMoveData), $result);
 
             // If called from getValidPieces() and a valid move is found, we can stop the iteration because we already know the piece is valid
-            if ($valid && count($result) > 0) {
+            if ($valid && !empty($result)) {
                 break;
             }
         }
@@ -818,7 +818,7 @@ class MoveService
             $result = array_merge($this->findValidMoves($board, $king, $piece, $pieces, $opponentPieces, $row, $square, $validMoveData), $result);
 
             // If called from getValidPieces() and a valid move is found, we can stop the iteration because we already know the piece is valid
-            if ($valid && count($result) > 0) {
+            if ($valid && !empty($result)) {
                 break;
             }
         }
