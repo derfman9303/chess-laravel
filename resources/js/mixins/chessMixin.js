@@ -1,3 +1,9 @@
+
+/**
+ * I created this mixin to put most of the UI logic inside of, instead of directly in BoardComponent.vue just in case I end up needing them elsewhere.
+ * I don't know exactly what my future plans for this project are, but I'm trying to build it out in the most expandable way
+ */
+
 import axios from 'axios';
 
 export default {
@@ -177,6 +183,8 @@ export default {
                 this.newPiece('pawn', 'black', 1, 6),
                 this.newPiece('pawn', 'black', 1, 7),
             ];
+
+            this.setKingMoved();
         },
 
         kingValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {
@@ -219,6 +227,24 @@ export default {
             }
     
             return result;
+        },
+
+        /**
+         * This function is used to check the starting position of the kings, and if it's different than the default position, set 'moved' to true.
+         * If we don't do this, it causes errors with the castling logic. This is particularly useful for when working with custom board setups.
+         */
+        setKingMoved() {
+            for (let i = 0; i < this.pieces.length; i++) {
+                let piece = this.pieces[i];
+
+                if (piece.type === 'king') {
+                    const row = piece.color === 'white' ? 7 : 0;
+
+                    if (piece.row !== row || piece.square !== 4) {
+                        piece.moved = true;
+                    }
+                }
+            }
         },
     
         queenValidMoves(board, piece, pieces, row, square, opponentPieces, king = false) {
@@ -376,6 +402,7 @@ export default {
             let r = row;
             let s = square;
 
+            // Check if r/s coordinates are still within the board
             while (r >= 0 && r < 8 && s >= 0 && s < 8) {
                 if (!king ? true : (this.doesMoveCauseCheck(board, king, piece, pieces, opponentPieces, r, s) == false)) {
                     if (board[r][s] === "empty") {
@@ -439,6 +466,11 @@ export default {
                     }
                 }
             }
+        },
+
+        addPreviousMoveHighlighting(oldRow, oldSquare, row, square, grid) {
+            grid[oldRow][oldSquare].classList.add('previous-move');
+            grid[row][square].classList.add('previous-move');
         },
 
         /**
@@ -574,32 +606,42 @@ export default {
             }
         },
 
-        castle(row, square, piece = this.selectedPiece, board = this.board, pieces = this.pieces, recursive = false) {
+        castle(row, square, kingIndex, board, pieces) {
 
             // Identify the rook to be castled
             const rookIndex = board[row][square];
     
             // Vacate squares
-            board[pieces[piece].row][pieces[piece].square] = 'empty';
+            board[pieces[kingIndex].row][pieces[kingIndex].square] = 'empty';
             board[row][square] = 'empty';
     
             if (square === 7) {
                 // Move the king
-                this.movePiece(row, square - 1, pieces[piece], pieces, piece, board);
+                this.movePiece(row, square - 1, pieces[kingIndex], pieces, kingIndex, board);
     
                 // Move the rook
                 this.movePiece(row, square - 2, pieces[rookIndex], pieces, rookIndex, board);
             } else if (square === 0) {
                 // Move the king
-                this.movePiece(row, square + 2, pieces[piece], pieces, piece, board);
+                this.movePiece(row, square + 2, pieces[kingIndex], pieces, kingIndex, board);
     
                 // Move the rook
                 this.movePiece(row, square + 3, pieces[rookIndex], pieces, rookIndex, board);
             }
     
-            if (!recursive) {
-                this.reloadGrid();
+            this.reloadGrid();
+        },
+
+        validCastle(piece, pieces, board, r, s) {
+            let result = false;
+    
+            if (r === 0 && s === 0) {
+                result = this.validLeftCastle(piece, pieces, board, r, s);
+            } else if (r === 0 && s === 7) {
+                result = this.validRightCastle(piece, pieces, board, r, s);
             }
+    
+            return result;
         },
 
         validLeftCastle(piece, pieces, board) {
@@ -810,18 +852,32 @@ export default {
          * Remove highlighting from all squares
          */
         removeHighlighting() {
-            let highlighted = document.querySelectorAll(".highlighted");
-            let capture     = document.querySelectorAll(".capture");
-            let castle      = document.querySelectorAll(".castle");
+            let highlighted  = document.querySelectorAll(".highlighted");
+            let capture      = document.querySelectorAll(".capture");
+            let castle       = document.querySelectorAll(".castle");
 
             [].forEach.call(highlighted, function(s) {
                 s.classList.remove("highlighted");
             });
+
             [].forEach.call(capture, function(s) {
                 s.classList.remove("capture");
             });
+
             [].forEach.call(castle, function(s) {
                 s.classList.remove("castle");
+            });
+        },
+
+        /**
+         * This function is separate from removeHighlighting() because if the user selects a piece and then de-selects,
+         * only the available move highlighting should be cleared, not the AI's previous move highlighting
+         */
+        removePreviousMoveHighlighting() {
+            let previousMove = document.querySelectorAll(".previous-move");
+
+            [].forEach.call(previousMove, function(s) {
+                s.classList.remove("previous-move");
             });
         },
 
@@ -868,22 +924,22 @@ export default {
          * @param {*} turn 
          * @param {*} steps 
          */
-        async getMove(board, pieces, turn, steps) {
-            console.log(board);
+        getMove(board, pieces, turn, steps) {
             const data = {
                 board: board,
                 pieces: pieces,
                 turn: turn,
                 steps: steps,
             };
-
-            await axios.post('/get-move', data)
-                .then(response => {
-                    console.log(response.data);
-                })
-                .catch(error => {
-                    console.error(error);
-                });
+            return new Promise(function (resolve, reject) { 
+                axios.post('/get-move', data)
+                    .then(response => {
+                        resolve(response.data); 
+                    })
+                    .catch(error => {
+                        reject(error);
+                    });
+            });
         },
     }
 }

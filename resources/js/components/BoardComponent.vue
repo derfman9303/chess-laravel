@@ -4,7 +4,7 @@
         class="position-absolute top-50 start-50 translate-middle"
         @click="handleClick"
     >
-        <div class="row d-flex flex-nowrap">
+        <div class="d-flex flex-nowrap">
             <div class="square"></div>
             <div class="square"></div>
             <div class="square"></div>
@@ -14,7 +14,7 @@
             <div class="square"></div>
             <div class="square"></div>
         </div>
-        <div class="row d-flex flex-nowrap">
+        <div class="d-flex flex-nowrap">
             <div class="square"></div>
             <div class="square"></div>
             <div class="square"></div>
@@ -24,7 +24,7 @@
             <div class="square"></div>
             <div class="square"></div>
         </div>
-        <div class="row d-flex flex-nowrap">
+        <div class="d-flex flex-nowrap">
             <div class="square"></div>
             <div class="square"></div>
             <div class="square"></div>
@@ -34,7 +34,7 @@
             <div class="square"></div>
             <div class="square"></div>
         </div>
-        <div class="row d-flex flex-nowrap">
+        <div class="d-flex flex-nowrap">
             <div class="square"></div>
             <div class="square"></div>
             <div class="square"></div>
@@ -44,7 +44,7 @@
             <div class="square"></div>
             <div class="square"></div>
         </div>
-        <div class="row d-flex flex-nowrap">
+        <div class="d-flex flex-nowrap">
             <div class="square"></div>
             <div class="square"></div>
             <div class="square"></div>
@@ -54,7 +54,7 @@
             <div class="square"></div>
             <div class="square"></div>
         </div>
-        <div class="row d-flex flex-nowrap">
+        <div class="d-flex flex-nowrap">
             <div class="square"></div>
             <div class="square"></div>
             <div class="square"></div>
@@ -64,7 +64,7 @@
             <div class="square"></div>
             <div class="square"></div>
         </div>
-        <div class="row d-flex flex-nowrap">
+        <div class="d-flex flex-nowrap">
             <div class="square"></div>
             <div class="square"></div>
             <div class="square"></div>
@@ -74,7 +74,7 @@
             <div class="square"></div>
             <div class="square"></div>
         </div>
-        <div class="row d-flex flex-nowrap">
+        <div class="d-flex flex-nowrap">
             <div class="square"></div>
             <div class="square"></div>
             <div class="square"></div>
@@ -117,7 +117,10 @@
         },
 
         methods: {
-            handleClick(event) {
+            async handleClick(event) {
+                // For tracking execution time
+                const t0 = performance.now();
+
                 // Starting from the clicked element
                 let currentElement = event.target;
 
@@ -133,44 +136,61 @@
                     let s = parseInt(currentElement.getAttribute('data-s'));
 
                     if (this.selectedPiece !== null) {
+                        let piece = this.pieces[this.selectedPiece];
 
                         if (this.grid[r][s].classList.contains("highlighted") || this.grid[r][s].classList.contains("capture")) {
+
+                            // Add highlighting before moving/castling the piece because otherwise the piece's row/square coords will be updated to match r/s
+                            this.removeHighlighting();
+                            this.removePreviousMoveHighlighting();
+                            this.addPreviousMoveHighlighting(piece.row, piece.square, r, s, this.grid);
                             this.movePiece(r, s);
+                            this.switchTurns();
                             this.reloadGrid();
-                            // this.switchTurns();
                         } else if (this.grid[r][s].classList.contains("castle")) {
-                            this.castle(r, s);
-                            // this.switchTurns();
+
+                            this.removeHighlighting();
+                            this.removePreviousMoveHighlighting();
+                            this.addPreviousMoveHighlighting(piece.row, piece.square, r, s, this.grid);
+                            this.castle(r, s, this.selectedPiece, this.board, this.pieces);
+                            this.switchTurns();
+                            this.reloadGrid();
+                        } else {
+                            // The player clicked off the selected piece, so the highlighting should be cleared
+                            this.removeHighlighting();
                         }
 
                         this.selectedPiece = null;
-                        this.removeHighlighting();
 
                         // AI makes move
                         if (!this.turn) {
-                            const move   = this.getMove(this.board, this.pieces, this.turn, 3);
-                            const index  = parseInt(move[0]);
-                            const row    = parseInt(move[1]);
-                            const square = parseInt(move[2]);
+                            const move      = await this.getMove(this.board, this.pieces, this.turn, 3);
+                            const index     = parseInt(move[0]);
+                            const row       = parseInt(move[1]);
+                            const square    = parseInt(move[2]);
+                            let piece       = this.pieces[index];
+                            const oldRow    = piece.row;
+                            const oldSquare = piece.square;
+
+                            console.log(move);
 
                             if (move !== false) {
-                                // Wait 1 second before moving piece on the screen, to make it feel more natural
-                                setTimeout(function() {
-                                    if (this.validCastle(this.pieces[this.board[0][4]], this.pieces, this.board, row, square)) {
-                                        this.castle(row, square, this.board[0][4], this.board, this.pieces);
-                                    } else {
-                                        this.movePiece(row, square, this.pieces[index], this.pieces, index, this.board);
-                                    }
+                                if (this.validCastle(this.pieces[this.board[0][4]], this.pieces, this.board, row, square)) {
+                                    this.castle(row, square, this.board[0][4], this.board, this.pieces);
+                                } else {
+                                    this.movePiece(row, square, piece, this.pieces, index, this.board);
+                                }
 
-                                    this.switchTurns();
-                                    this.reloadGrid();
-                                }, 1000);
+                                this.removeHighlighting();
+                                this.removePreviousMoveHighlighting();
+                                this.addPreviousMoveHighlighting(oldRow, oldSquare, piece.row, piece.square, this.grid);
+                                this.switchTurns();
+                                this.reloadGrid();
                             } else {
                                 // Checkmate by white? Stalemate?
                             }
                         }
                     } else if (this.selectPiece(r, s)) {
-                        console.log("selectPiece() returned true");
 
                         if (this.getSelectedPiece().color === 'white' && this.getTurn() === 'white') {
                             let totalValidPieces = this.getValidPieces(this.board, this.pieces, this.turn);
@@ -193,6 +213,9 @@
                         }
                     }
                 }
+
+                const t1 = performance.now();
+                console.log(`Call to handleClick() took ${t1 - t0} milliseconds.`);
             },
         },
 
@@ -236,19 +259,23 @@
         padding: 7.5px;
     }
 
-    .highlighted {
-        background-color: #e3d756;
-        border: 1px solid #c2b849;
+    /**
+    * The below classes use div because they need higher specificity to take precedence over the previous-move class
+    */
+    div.highlighted {
+        border: 4px solid #e3d756;
     }
 
-    .capture {
-        background-color: #e64949;
-        border: 1px solid #e64949;
+    div.capture {
+        border: 4px solid #e64949;
     }
 
-    .castle {
-        background-color: #4cb2e6;
-        border: 1px solid #4cb2e6;
+    div.castle {
+        border: 4px solid #4cb2e6;
+    }
+
+    .previous-move {
+        border: 4px solid #91c472;
     }
 
     @media screen and (max-width: 769px) {

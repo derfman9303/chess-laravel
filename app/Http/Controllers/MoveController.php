@@ -3,15 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Services\MoveService;
 
 class MoveController extends Controller
 {
     function getMove(Request $request) {
-        $data = [
-            'board' => $request->input('board'),
-            'hello' => 'world',
-        ];
+        $board  = $request->input('board');
+        $pieces = $request->input('pieces');
+        $turn   = $request->input('turn');
+        $steps  = $request->input('steps');
 
-        return response()->json($data);
+        $moveService = new MoveService;
+
+        return $moveService->getMove($board, $pieces, $turn, $steps);
     }
 }
