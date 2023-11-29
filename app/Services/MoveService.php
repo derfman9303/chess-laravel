@@ -347,7 +347,10 @@ class MoveService
                 }
             }
 
-            if (!$piece['captured'] && !empty($this->getValidMoves($board, $piece, $pieces, true))) {
+            $validMoves = $this->getValidMoves($board, $piece, $pieces, true);
+            $this->unsetTargetedMoves($validMoves);
+
+            if (!$piece['captured'] && !empty($validMoves)) {
                 if ($piece['color'] == $this->getTurnColor($turn)) {
                     $myPieces[] = $index;
                 } else {
@@ -402,6 +405,8 @@ class MoveService
         $result4         = false;
         $attackingPieces = [];
 
+        // TODO: $result3 is showing targeted options for the king's moves that are currently occupied by its own pawns 
+
         $this->findAttackingPiecesLoop($board, $pieces, 'straight', $king, $attackingPieces, $result1, $result2);
         $this->findAttackingPiecesLoop($board, $pieces, 'diagonal', $king, $attackingPieces, $result1, $result2);
         $this->findAttackingPiecesKnight($board, $pieces, $king, $attackingPieces, $result2);
@@ -419,10 +424,8 @@ class MoveService
         }
 
         // Find the valid moves for the king that aren't targeted
-        $validMoves = $this->kingValidMoves($board, $king, $pieces, $opponentPieces, false);
-        $validMoves = $this->removeMovesToTargetedSquares($validMoves, $targetedBoard);
-
-        $result3 = $validMoves;
+        $result3 = $this->kingValidMoves($board, $king, $pieces, $opponentPieces, false);
+        $result3 = $this->removeMovesToTargetedSquares($result3, $targetedBoard);
 
         return [$result1, $result2, $result3, $result4];
     }
