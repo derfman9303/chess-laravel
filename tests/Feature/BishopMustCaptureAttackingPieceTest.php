@@ -8,11 +8,6 @@ use Tests\TestCase;
 
 class BishopMustCaptureAttackingPieceTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
     public function test_bishop_must_capture_attacking_piece()
     {
         $board = $this->newBoard();

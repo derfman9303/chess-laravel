@@ -8,11 +8,6 @@ use Tests\TestCase;
 
 class KingMustMoveOutOfCheckPawnTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
     public function test_example()
     {
         $board = $this->newBoard();
