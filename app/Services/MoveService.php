@@ -92,6 +92,9 @@ class MoveService
                     $preferredMoves[$index] = $move;
                 }
             }
+
+            // If one or more of the preferred moves capture a piece, remove the others that don't
+            $this->prioritizeCapturingMoves($board, $pieces, $preferredMoves);
     
             $preferredMoveKeys = array_keys($preferredMoves);
     
@@ -262,6 +265,32 @@ class MoveService
             } else {
                 return false;
             }
+        }
+    }
+
+    /**
+     * Searches the $preferredMoves array for any moves that capture a piece, and if one or more are found, removes the others that don't capture.
+     * If the AI can capture a piece, and all else is equal, this function ensures that it does.
+     */
+    protected function prioritizeCapturingMoves($board, $pieces, &$preferredMoves): void {
+        $capturingMoves = [];
+
+        foreach ($preferredMoves as $index => $move) {
+            $exploded  = explode(',', $index);
+            $oldRow    = $exploded[0];
+            $oldSquare = $exploded[1];
+            $newRow    = $exploded[2];
+            $newSquare = $exploded[3];
+            $piece     = $this->getPiece($board, $pieces, $oldRow, $oldSquare);
+
+            // Move captures a piece
+            if ($board[$newRow][$newSquare] !== 'empty') {
+                $capturingMoves[$index] = $move;
+            }
+        }
+
+        if (!empty($capturingMoves)) {
+            $preferredMoves = $capturingMoves;
         }
     }
 
