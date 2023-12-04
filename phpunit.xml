@@ -15,6 +15,7 @@
             <file>./tests/Feature/BishopMustBlockAttackingPieceTest.php</file>
             <file>./tests/Feature/BishopMustCaptureAttackingPieceTest.php</file>
             <file>./tests/Feature/KingCannotCaptureTargetedPieceTest.php</file>
+            <file>./tests/Feature/KingCannotCaptureTargetedPiece2Test.php</file>
             <file>./tests/Feature/KingCannotMoveOppositeAttackingPieceTest.php</file>
             <file>./tests/Feature/KingMustCancelCheckTest.php</file>
             <file>./tests/Feature/KingMustMoveOutOfCheckKnightTest.php</file>

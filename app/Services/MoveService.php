@@ -348,7 +348,14 @@ class MoveService
             }
 
             $validMoves = $this->getValidMoves($board, $piece, $pieces, true);
-            $this->unsetTargetedMoves($validMoves);
+
+            // Only unset the targeted moves for the current player, not the opponent. Because the getTargetedSquares logic is using the opponent's valid pieces
+            // from this function, and if a piece has no valid moves but is targeting another piece, then that square doesn't get flagged as targeted and
+            // therefore the king would be allowed to capture the piece on that square. So we need to include opponent pieces that are also targeting one of
+            // their own pieces.
+            if ($piece['color'] == $this->getTurnColor($turn)) {
+                $this->unsetTargetedMoves($validMoves);
+            }
 
             if (!$piece['captured'] && !empty($validMoves)) {
                 if ($piece['color'] == $this->getTurnColor($turn)) {
