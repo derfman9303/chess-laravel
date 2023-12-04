@@ -373,8 +373,6 @@ class MoveService
      * The main function for calculating the valid moves for a given piece, specifically when being called from the mini-max algorithm.
      */
     protected function calculateValidMoves($board, $piece, $pieces, $turn, $validMoveData, $king = false, $opponentPieces = []) {
-        // TODO: The logic checking for targeted pieces is not recording the squares that are occupied by an opponent's piece but are also targeted by another opponent piece.
-        // This will need to be updated because otherwise you can't know if the attacking piece can be captured by the king.
 
         $validMoves = $this->getValidMoves($board, $piece, $pieces, false, $king, $opponentPieces, $validMoveData);
         $this->unsetTargetedMoves($validMoves);
