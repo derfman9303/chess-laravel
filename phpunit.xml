@@ -19,6 +19,7 @@
             <file>./tests/Feature/KingMustCancelCheckTest.php</file>
             <file>./tests/Feature/KingMustMoveOutOfCheckKnightTest.php</file>
             <file>./tests/Feature/KingMustMoveOutOfCheckPawnTest.php</file>
+            <file>./tests/Feature/PieceCanMoveIfItStillBlocksAttackingPieceTest.php</file>
         </testsuite>
     </testsuites>
     <coverage processUncoveredFiles="true">
