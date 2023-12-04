@@ -36,7 +36,7 @@ class MoveService
         if (count($validPieces) > 0) {
             $targeted      = $this->getTargetedSquares($board, $pieces, $opponentPieces);
             $targetedBoard = $this->markTargetedSquaresOnBoard($targeted);
-            $validMoveData = $this->checkKingTargeted($board, $pieces, $opponentPieces, $king, $targetedBoard);
+            $validMoveData = $this->getValidMoveData($board, $pieces, $opponentPieces, $king, $targetedBoard);
 
             foreach ($validPieces as $validPieceIndex) {
                 $piece      = $pieces[$validPieceIndex];
@@ -122,7 +122,7 @@ class MoveService
             if (count($validPieces) > 0) {
                 $targeted      = $this->getTargetedSquares($board, $pieces, $opponentPieces);
                 $targetedBoard = $this->markTargetedSquaresOnBoard($targeted);
-                $validMoveData = $this->checkKingTargeted($board, $pieces, $opponentPieces, $king, $targetedBoard);
+                $validMoveData = $this->getValidMoveData($board, $pieces, $opponentPieces, $king, $targetedBoard);
 
                 foreach ($validPieces as $validPieceIndex) {
                     $piece      = $pieces[$validPieceIndex];
@@ -202,7 +202,7 @@ class MoveService
             if (count($validPieces) > 0) {
                 $targeted      = $this->getTargetedSquares($board, $pieces, $opponentPieces);
                 $targetedBoard = $this->markTargetedSquaresOnBoard($targeted);
-                $validMoveData = $this->checkKingTargeted($board, $pieces, $opponentPieces, $king, $targetedBoard);
+                $validMoveData = $this->getValidMoveData($board, $pieces, $opponentPieces, $king, $targetedBoard);
 
                 foreach ($validPieces as $validPieceIndex) {
                     $piece      = $pieces[$validPieceIndex];
@@ -398,7 +398,7 @@ class MoveService
      * 
      * This is a lot for one function to return, but I built it this way for efficiency purposes because it can all be done at the same time
      */
-    protected function checkKingTargeted($board, $pieces, $opponentPieces, $king, $targetedBoard) {
+    protected function getValidMoveData($board, $pieces, $opponentPieces, $king, $targetedBoard) {
         $result1         = [];
         $result2         = [];
         $result3         = [];
@@ -473,7 +473,7 @@ class MoveService
                             $blockingPieces = [];
                             $highlighted    = [];
                         } elseif (!empty($blockingPieces)) {
-                            $result1[$blockingPieces[0]] = $r . ',' . $s;
+                            $result1[$blockingPieces[0]] = $highlighted;
                             $highlighted = [];
                         }
 
@@ -482,13 +482,12 @@ class MoveService
                     // Else if the piece is the same color of the king but is not the king, this could potentially be a blocking piece
                     } elseif ($pieceInQuestion['color'] == $king['color'] && $pieceInQuestion['index'] != $king['index']) {
                         $blockingPieces[] = $pieceInQuestion['index'];
-                        $highlighted = [];
                     } else {
                         // If the first opponent piece we find is not one that can attack the king from its position
                         break;
                     }
                 } else {
-                    $highlighted[] = $r . ',' . $s;  
+                    $highlighted[] = $r . ',' . $s;
                 }
 
                 $this->updateCoordsByDirection($r, $s, $direction);
@@ -629,7 +628,7 @@ class MoveService
     }
 
     /**
-     * This function in its current state should only be used to calculate the opponent's targeted squares, because it's not running the checkKingTargeted logic.
+     * This function in its current state should only be used to calculate the opponent's targeted squares, because it's not running the getValidMoveData logic.
      * For the player whose turn it is, they can only make a move if it doesn't put their own king into check, which this function doesn't take into account.
      */
     protected function getTargetedSquares($board, $pieces, $opponentPieces) {
@@ -1116,36 +1115,36 @@ class MoveService
      * $data4: Whether the king is currently in check (true/false)
      */
     protected function doesMoveCauseCheck($board, $king, $piece, $pieces, $opponentPieces, $r, $s, $validMoveData) {
-
-        $data1 = $validMoveData[0];
-        $data2 = $validMoveData[1];
-        $data3 = $validMoveData[2];
-        $data4 = $validMoveData[3];
+        $result = false;
+        $data1  = $validMoveData[0];
+        $data2  = $validMoveData[1];
+        $data3  = $validMoveData[2];
+        $data4  = $validMoveData[3];
 
         if ($piece['type'] !== 'king') {
             // If the piece is one that can only make a single valid move, to capture a blocked attacking piece
             if (isset($data1[$piece['index']])) {
-                $move = $data1[$piece['index']];
+                $moves = $data1[$piece['index']];
 
-                if (($r . ',' . $s) != $move) {
-                    return true;
+                if (!in_array(($r . ',' . $s), $moves)) {
+                    $result = true;
                 }
 
             // Else if the move we're checking is not one of the moves that would cancel check
             } elseif (!empty($data2) && !in_array(($r . ',' . $s), $data2)) {
-                return true;
+                $result = true;
             // Else if the king is in check and the piece has no moves to cancel the check
             } elseif ($data4 && empty($data1) && empty($data2)) {
-                return true;
+                $result = true;
             }
         } else {
             // If the piece is the king, and the move we're checking is not one of the found valid moves for the king that avoid check
             if (!in_array(($r . ',' . $s), array_keys($data3))) {
-                return true;
+                $result = true;
             }
         }
 
-        return false;
+        return $result;
     }
 
     protected function capturePiece($row, $square, &$board, &$pieces, $turn) {
