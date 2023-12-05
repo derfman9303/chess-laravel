@@ -21,6 +21,7 @@
             <file>./tests/Feature/KingMustMoveOutOfCheckKnightTest.php</file>
             <file>./tests/Feature/KingMustMoveOutOfCheckPawnTest.php</file>
             <file>./tests/Feature/PieceCanMoveIfItStillBlocksAttackingPieceTest.php</file>
+            <file>./tests/Feature/PawnCannotMoveThroughPiecesTest.php</file>
         </testsuite>
     </testsuites>
     <coverage processUncoveredFiles="true">
