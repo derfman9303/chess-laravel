@@ -842,7 +842,8 @@ class MoveService
             // forward 1
             $result = array_merge($this->findValidMovesPawn($board, $king, $piece, $pieces, $opponentPieces, $row - 1, $square, $validMoveData), $result);
 
-            if (!$piece['moved']) {
+            // If result is not empty at this point, that means that the pawn's 2-square move is unobstructed
+            if (!$piece['moved'] && !empty($result)) {
                 // forward 2
                 $result = array_merge($this->findValidMovesPawn($board, $king, $piece, $pieces, $opponentPieces, $row - 2, $square, $validMoveData), $result);
             }
@@ -856,7 +857,8 @@ class MoveService
             // forward 1
             $result = array_merge($this->findValidMovesPawn($board, $king, $piece, $pieces, $opponentPieces, $row + 1, $square, $validMoveData), $result);
 
-            if (!$piece['moved']) {
+            // If result is not empty at this point, that means that the pawn's 2-square move is unobstructed
+            if (!$piece['moved'] && !empty($result)) {
                 // forward 2
                 $result = array_merge($this->findValidMovesPawn($board, $king, $piece, $pieces, $opponentPieces, $row + 2, $square, $validMoveData), $result);
             }
@@ -952,9 +954,9 @@ class MoveService
                     if ($board[$r][$s] !== "empty") {
                         if ($this->getPiece($board, $pieces, $r, $s)['color'] != $piece['color']) {
                             $result[$r . ',' . $s] = 'capture';
-                        } else {
-                            $result[$r . ',' . $s] = 'targeted';
                         }
+                    } else {
+                        $result[$r . ',' . $s] = 'targeted';
                     }
                 }
             } else {

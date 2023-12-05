@@ -6,21 +6,22 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
-class PieceCanMoveIfItStillBlocksAttackingPieceTest extends TestCase
+class PawnCannotMoveThroughPiecesTest extends TestCase
 {
-    public function test_piece_can_move_if_it_still_blocks_attacking_piece()
+    public function test_pawn_cannot_move_through_pieces()
     {
         $board = $this->newBoard();
 
         $pieces = [
             $this->newPiece('king', 'black', 4, 4),
             $this->newPiece('king', 'white', 7, 4),
-            $this->newPiece('rook', 'white', 0, 3),
             $this->newPiece('rook', 'white', 0, 5),
-            $this->newPiece('queen', 'white', 1, 4),
-            $this->newPiece('pawn', 'black', 2, 4),
             $this->newPiece('rook', 'white', 3, 0),
             $this->newPiece('rook', 'white', 5, 0),
+            $this->newPiece('rook', 'white', 7, 3),
+            $this->newPiece('bishop', 'white', 0, 0),
+            $this->newPiece('pawn', 'white', 2, 3),
+            $this->newPiece('pawn', 'black', 1, 3),
         ];
 
         $this->indexPieces($pieces);
@@ -34,6 +35,6 @@ class PieceCanMoveIfItStillBlocksAttackingPieceTest extends TestCase
             'steps'  => 3,
         ]);
 
-        $this->assertEquals([5, 3, 4], $response->json());
+        $this->assertEquals([], $response->json());
     }
 }
