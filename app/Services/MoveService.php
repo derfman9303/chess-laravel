@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Exceptions\MoveException;
+
 class MoveService
 {
     public function __construct() {
@@ -430,7 +432,7 @@ class MoveService
 
         // Find the valid moves for the king that aren't targeted
         $result3 = $this->kingValidMoves($board, $king, $pieces, $opponentPieces, false);
-        $result3 = $this->removeMovesToTargetedSquares($result3, $targetedBoard);
+        $this->removeMovesToTargetedSquares($result3);
 
         return [$result1, $result2, $result3, $result4];
     }
@@ -583,20 +585,12 @@ class MoveService
      * Removes the moves in the $validMoves array which would put the piece on a square that the opponent is attacking.
      * This is used to determine where the king can move.
      */
-    protected function removeMovesToTargetedSquares($validMoves, $targetedBoard) {
-        $result = $validMoves;
-
+    protected function removeMovesToTargetedSquares(&$validMoves) {
         foreach ($validMoves as $index => $move) {
-            $exploded = explode(',', $index);
-            $row      = $exploded[0];
-            $square   = $exploded[1];
-
-            if ($targetedBoard[$row][$square] !== 'none') {
-                unset($result[$index]);
+            if ($move == 'targeted') {
+                unset($validMoves[$index]);
             }
         }
-
-        return $result;
     }
 
     /**
@@ -1158,8 +1152,14 @@ class MoveService
         $result = false;
 
         // If piece exists on row/square, and belongs to the opposite turn
-        if ($board[$row][$square] != 'empty' && $this->getPiece($board, $pieces, $row, $square)['color'] != $this->getTurnColor($turn)) {
+        if ($board[$row][$square] !== 'empty' && $this->getPiece($board, $pieces, $row, $square)['color'] != $this->getTurnColor($turn)) {
             $result = $board[$row][$square];
+
+            // Error handling for when the king gets captured, which should never actually happen.
+            // When a checkmate is reached, the game should end.
+            if ($pieces[$result]['type'] == 'king') {
+                throw new MoveException('Attempted to capture king in function capturePiece().', 500, ['board' => $board, 'pieces' => $pieces]);
+            }
 
             $pieces[$result]['captured'] = true;
             $pieces[$result]['row']      = -1;
