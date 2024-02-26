@@ -40913,9 +40913,8 @@ Vue.component('board-component', (__webpack_require__(/*! ./components/BoardComp
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-var app = new Vue({
-  el: '#app'
-});
+var app = Vue.createApp({});
+app.mount('#app');
 
 /***/ }),
 

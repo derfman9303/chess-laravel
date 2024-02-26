@@ -28,6 +28,5 @@ Vue.component('board-component', require('./components/BoardComponent.vue').defa
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-let app = new Vue({
-    el: '#app'
-});
+const app = Vue.createApp({});
+app.mount('#app');
