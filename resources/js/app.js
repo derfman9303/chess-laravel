@@ -6,7 +6,12 @@
 
 require('./bootstrap');
 
-window.Vue = require('@vue/compat').default;
+import BoardComponent from './components/BoardComponent.vue';
+import { createApp } from 'vue';
+
+/**
+ * VUE 2 SYNTAX BELOW
+ */
 
 /**
  * The following block of code may be used to automatically register your
@@ -19,14 +24,12 @@ window.Vue = require('@vue/compat').default;
 // const files = require.context('./', true, /\.vue$/i)
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
-Vue.component('example-component', require('./components/ExampleComponent.vue').default);
-Vue.component('board-component', require('./components/BoardComponent.vue').default);
+// Vue.component('example-component', require('./components/ExampleComponent.vue').default);
+// Vue.component('board-component', require('./components/BoardComponent.vue').default);
 
-/**
- * Next, we will create a fresh Vue application instance and attach it to
- * the page. Then, you may begin adding components to this application
- * or customize the JavaScript scaffolding to fit your unique needs.
- */
 
-const app = Vue.createApp({});
+const app = createApp({});
+
+app.component('board-component', BoardComponent);
+
 app.mount('#app');
