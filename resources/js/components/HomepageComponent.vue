@@ -8,8 +8,8 @@
         <div class="row">
             <div>
                 <v-btn
-                
-                ></v-btn>
+                    
+                >Single Player</v-btn>
             </div>
         </div>
     </div>

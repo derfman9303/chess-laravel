@@ -7,8 +7,21 @@
 require('./bootstrap');
 
 import { createApp } from 'vue';
+
+// Components
 import BoardComponent from './components/BoardComponent.vue';
 import HomepageComponent from './components/HomepageComponent.vue';
+
+// Vuetify
+import 'vuetify/styles';
+import { createVuetify } from 'vuetify';
+import * as components from 'vuetify/components';
+import * as directives from 'vuetify/directives';
+
+const vuetify = createVuetify({
+  components,
+  directives
+});
 
 /**
  * VUE 2 SYNTAX BELOW
@@ -30,6 +43,8 @@ import HomepageComponent from './components/HomepageComponent.vue';
 
 
 const app = createApp({});
+
+app.use(vuetify);
 
 app.component('board-component', BoardComponent);
 app.component('homepage-component', HomepageComponent);
