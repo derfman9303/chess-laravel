@@ -17,6 +17,10 @@ Route::get('/', function () {
     return view('index');
 });
 
+Route::get('/singleplayer', function () {
+    return view('singleplayer');
+});
+
 Route::post('/get-move', 'App\Http\Controllers\MoveController@getMove');
 
 Route::get('/test-database', function () {

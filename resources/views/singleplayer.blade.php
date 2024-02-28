@@ -1,3 +1,3 @@
 @include('assets.header')
-@include('homepage')
+@include('board')
 @include('assets.footer')

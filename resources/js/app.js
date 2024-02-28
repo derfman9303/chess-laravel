@@ -6,8 +6,9 @@
 
 require('./bootstrap');
 
-import BoardComponent from './components/BoardComponent.vue';
 import { createApp } from 'vue';
+import BoardComponent from './components/BoardComponent.vue';
+import HomepageComponent from './components/HomepageComponent.vue';
 
 /**
  * VUE 2 SYNTAX BELOW
@@ -31,5 +32,6 @@ import { createApp } from 'vue';
 const app = createApp({});
 
 app.component('board-component', BoardComponent);
+app.component('homepage-component', HomepageComponent);
 
 app.mount('#app');
