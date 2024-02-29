@@ -1,19 +1,34 @@
 <template>
-    <div>
-        <div class="row">
-            <h1>
-                Frederic Hodges Chess
-            </h1>
+    <div id="homepage-container">
+        <div class="row pt-5 justify-content-center">
+            <div class="col">
+                <h1 class="text-center">
+                    Frederic Hodges Chess
+                </h1>
+            </div>
         </div>
-        <div class="row">
-            <div>
-                <v-btn
-                    
-                >Single Player</v-btn>
+        <div class="row justify-content-center">
+            <div class="col-auto">
+                <v-btn color="primary m-2">
+                    Single Player
+                </v-btn>
+                <v-btn color="primary m-2">
+                    Multiplayer
+                </v-btn>
             </div>
         </div>
     </div>
 </template>
+
+<style>
+    #homepage-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+    }
+</style>
 
 <script>
 
