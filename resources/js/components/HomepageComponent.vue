@@ -9,7 +9,10 @@
         </div>
         <div class="row justify-content-center">
             <div class="col-auto">
-                <v-btn color="primary m-2">
+                <v-btn
+                    color="primary m-2"
+                    @click="routePage('/singleplayer')"
+                >
                     Single Player
                 </v-btn>
                 <v-menu>
