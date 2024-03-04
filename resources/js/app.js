@@ -11,6 +11,8 @@ import { createApp } from 'vue';
 // Components
 import BoardComponent from './components/BoardComponent.vue';
 import HomepageComponent from './components/HomepageComponent.vue';
+import PrivateMatchComponent from './components/PrivateMatchComponent.vue';
+import RandomMatchComponent from './components/RandomMatchComponent.vue';
 
 // Vuetify
 import 'vuetify/styles';
@@ -48,5 +50,7 @@ app.use(vuetify);
 
 app.component('board-component', BoardComponent);
 app.component('homepage-component', HomepageComponent);
+app.component('private-match-component', PrivateMatchComponent);
+app.component('random-match-component', RandomMatchComponent);
 
 app.mount('#app');

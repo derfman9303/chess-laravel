@@ -21,6 +21,14 @@ Route::get('/singleplayer', function () {
     return view('singleplayer');
 });
 
+Route::get('/private-match', function () {
+    return view('private-match');
+});
+
+Route::get('/random-match', function () {
+    return view('random-match');
+});
+
 Route::post('/get-move', 'App\Http\Controllers\MoveController@getMove');
 
 Route::get('/test-database', function () {
