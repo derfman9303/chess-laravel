@@ -14,15 +14,15 @@ class TestNotification implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $message;
+    public $key;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($message)
+    public function __construct($key)
     {
-        $this->message = $message;
+        $this->key = $key;
     }
 
     /**
@@ -32,10 +32,10 @@ class TestNotification implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel('notification');
+        return new Channel('privatematch-' . $this->key);
     }
 
     public function broadcastAs() {
-        return 'broadcastEvent';
+        return 'opponentMoved';
     }
 }

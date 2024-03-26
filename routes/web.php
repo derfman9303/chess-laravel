@@ -31,6 +31,8 @@ Route::get('/random-match', function () {
 
 Route::post('/get-move', 'App\Http\Controllers\MoveController@getMove');
 
+Route::post('/make-move', 'App\Http\Controllers\MoveController@makeMove');
+
 Route::get('/test-database', function () {
     try {
         DB::connection()->getPdo();

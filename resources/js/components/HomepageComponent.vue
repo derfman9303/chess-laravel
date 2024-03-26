@@ -29,6 +29,7 @@
                             v-for="(item, index) in items"
                             :key="index"
                             :value="index"
+                            :disabled="item.disabled"
                             @click="routePage(item.route)"
                         >
                             <v-list-item-title>{{ item.title }}</v-list-item-title>
@@ -61,10 +62,12 @@
                     {
                         title: 'Private game',
                         route: '/private-match',
+                        disabled: false,
                     },
                     {
                         title: 'Random match',
                         route: '/random-match',
+                        disabled: true,
                     }
                 ],   
             };
@@ -81,10 +84,7 @@
         },
 
         mounted() {
-            Echo.channel('notification')
-            .listen('.broadcastEvent', (e) => {
-                console.log('listening event', e);
-            });
+
         }
     }
 </script>

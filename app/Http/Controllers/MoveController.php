@@ -19,6 +19,6 @@ class MoveController extends Controller
     }
 
     function makeMove(Request $request) {
-        event(new \App\Events\TestNotification('This is testing data'));
+        event(new \App\Events\TestNotification($request->input('key')));
     }
 }
