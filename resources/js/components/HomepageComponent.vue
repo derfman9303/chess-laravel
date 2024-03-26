@@ -81,7 +81,10 @@
         },
 
         mounted() {
-
+            Echo.channel('notification')
+            .listen('.broadcastEvent', (e) => {
+                console.log('listening event', e);
+            });
         }
     }
 </script>

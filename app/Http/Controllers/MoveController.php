@@ -17,4 +17,8 @@ class MoveController extends Controller
 
         return $moveService->getMove($board, $pieces, $turn, $steps);
     }
+
+    function makeMove(Request $request) {
+        event(new \App\Events\TestNotification('This is testing data'));
+    }
 }

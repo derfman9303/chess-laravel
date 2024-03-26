@@ -11,6 +11,8 @@
     },
     "dependencies": {
         "@vue/compiler-sfc": "^3.4.19",
+        "laravel-echo": "^1.16.0",
+        "pusher-js": "^8.4.0-rc2",
         "vue": "^3.4.19",
         "vuetify": "^3.5.6"
     },
