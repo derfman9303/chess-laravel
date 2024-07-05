@@ -116,107 +116,11 @@
             }
         },
 
-        methods: {
-            async handleClick(event) {
-                // For tracking execution time
-                const t0 = performance.now();
-
-                // Starting from the clicked element
-                let currentElement = event.target;
-
-                // Continue traversing up the DOM tree until a parent with the 'square' class is found
-                while (currentElement && !currentElement.classList.contains('square')) {
-                    currentElement = currentElement.parentElement;
-                }
-
-                // If the user clicked on a square (or the svg/path of the piece inside the square), otherwise do nothing
-                if (currentElement && currentElement.classList.contains('square')) {
-
-                    let r = parseInt(currentElement.getAttribute('data-r'));
-                    let s = parseInt(currentElement.getAttribute('data-s'));
-
-                    if (this.selectedPiece !== null) {
-                        let piece = this.pieces[this.selectedPiece];
-
-                        if (this.grid[r][s].classList.contains("highlighted") || this.grid[r][s].classList.contains("capture")) {
-
-                            // Add highlighting before moving/castling the piece because otherwise the piece's row/square coords will be updated to match r/s
-                            this.removeHighlighting();
-                            this.removePreviousMoveHighlighting();
-                            this.addPreviousMoveHighlighting(piece.row, piece.square, r, s, this.grid);
-                            this.movePiece(r, s);
-                            this.switchTurns();
-                            this.reloadGrid();
-                        } else if (this.grid[r][s].classList.contains("castle")) {
-
-                            this.removeHighlighting();
-                            this.removePreviousMoveHighlighting();
-                            this.addPreviousMoveHighlighting(piece.row, piece.square, r, s, this.grid);
-                            this.castle(r, s, this.selectedPiece, this.board, this.pieces);
-                            this.switchTurns();
-                            this.reloadGrid();
-                        } else {
-                            // The player clicked off the selected piece, so the highlighting should be cleared
-                            this.removeHighlighting();
-                        }
-
-                        this.selectedPiece = null;
-
-                        // AI makes move
-                        if (!this.turn) {
-                            const move      = await this.getMove(this.board, this.pieces, this.turn, 3);
-                            const index     = parseInt(move[0]);
-                            const row       = parseInt(move[1]);
-                            const square    = parseInt(move[2]);
-                            let piece       = this.pieces[index];
-                            const oldRow    = piece.row;
-                            const oldSquare = piece.square;
-
-                            console.log(move);
-
-                            if (move !== false) {
-                                if (this.validCastle(this.pieces[this.board[0][4]], this.pieces, this.board, row, square)) {
-                                    this.castle(row, square, this.board[0][4], this.board, this.pieces);
-                                } else {
-                                    this.movePiece(row, square, piece, this.pieces, index, this.board);
-                                }
-
-                                this.removeHighlighting();
-                                this.removePreviousMoveHighlighting();
-                                this.addPreviousMoveHighlighting(oldRow, oldSquare, piece.row, piece.square, this.grid);
-                                this.switchTurns();
-                                this.reloadGrid();
-                            } else {
-                                // Checkmate by white? Stalemate?
-                            }
-                        }
-                    } else if (this.selectPiece(r, s)) {
-
-                        if (this.getSelectedPiece().color === 'white' && this.getTurn() === 'white') {
-                            let totalValidPieces = this.getValidPieces(this.board, this.pieces, this.turn);
-                            let opponentPieces   = totalValidPieces[1];
-                            let king             = totalValidPieces[2];
-                            let validMoves       = this.getValidMoves(this.board, this.getSelectedPiece(), this.pieces, r, s, king, opponentPieces);
-
-                            if (Object.keys(validMoves).length > 0) {
-                                Object.keys(validMoves).forEach(key => {
-                                    let vr = key.split(',')[0];
-                                    let vs = key.split(',')[1];
-            
-                                    this.grid[vr][vs].classList.add(validMoves[key]);
-                                });
-                            } else {
-                                this.selectedPiece = null;
-                            }
-                        } else {
-                            this.selectedPiece = null;
-                        }
-                    }
-                }
-
-                const t1 = performance.now();
-                console.log(`Call to handleClick() took ${t1 - t0} milliseconds.`);
-            },
+        props: {
+            multiplayer: {
+                type: Boolean,
+                default: false,
+            }
         },
 
         created() {
