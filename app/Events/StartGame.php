@@ -10,7 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class TestNotification implements ShouldBroadcast
+class StartGame implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -27,6 +27,6 @@ class TestNotification implements ShouldBroadcast
     }
 
     public function broadcastAs() {
-        return 'opponentMoved';
+        return 'startGame';
     }
 }

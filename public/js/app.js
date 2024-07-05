@@ -21634,35 +21634,38 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
+/* harmony import */ var _BoardComponent__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./BoardComponent */ "./resources/js/components/BoardComponent.vue");
+/* harmony import */ var _mixins_chessMixin__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../mixins/chessMixin */ "./resources/js/mixins/chessMixin.js");
+
+
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: 'PrivateMatchComponent',
+  mixins: [_mixins_chessMixin__WEBPACK_IMPORTED_MODULE_1__["default"]],
   data: function data() {
     return {
       board: null,
       key: Date.now(),
       joinUrl: null,
       userIsPlayerOne: true,
-      occupied: false
+      occupied: false,
+      timeLimit: 30,
+      gameStarted: false,
+      color: null
     };
   },
+  components: {
+    BoardComponent: _BoardComponent__WEBPACK_IMPORTED_MODULE_0__["default"]
+  },
   methods: {
-    makeMove: function makeMove() {
-      var moveData = {
-        board: null,
-        key: this.key
-      };
-      axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/make-move', moveData).then(function (response) {
-        console.log(response);
-      })["catch"](function (error) {
-        console.log(error);
-      });
-    },
     subscribeToChannel: function subscribeToChannel() {
+      var _this = this;
       console.log("Subscribing...");
       Echo.channel('privatematch-' + this.key).listen('.opponentMoved', function (e) {
         console.log('listening event', e);
+      }).listen('.startGame', function (e) {
+        _this.startGame();
       });
     },
     buildJoinUrl: function buildJoinUrl() {
@@ -21675,24 +21678,23 @@ __webpack_require__.r(__webpack_exports__);
       this.joinUrl = window.location.href + '?key=' + this.key;
     },
     checkIfOccupied: function checkIfOccupied() {
-      var _this = this;
+      var _this2 = this;
       var buttonClick = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/is-channel-occupied', {
+      axios__WEBPACK_IMPORTED_MODULE_2__["default"].post('/is-channel-occupied', {
         channel: 'privatematch-' + this.key
       }).then(function (response) {
-        _this.occupied = response.data.occupied;
-        console.log(_this.occupied);
+        _this2.occupied = response.data.occupied;
+        console.log(_this2.occupied);
 
         // If user is not player 1, and no other player has joined, then they should be allowed to join. Otherwise, the game is full
-        if (!_this.userIsPlayerOne && !_this.occupied) {
-          _this.subscribeToChannel();
-        } else if (!!_this.userIsPlayerOne && !_this.occupied) {
+        if (!_this2.userIsPlayerOne && !_this2.occupied) {
+          _this2.subscribeToChannel();
+        } else if (!!_this2.userIsPlayerOne && !_this2.occupied) {
           if (!!buttonClick) {
             alert("Player 2 has not joined the game yet :(");
           }
-        } else if (!!_this.userIsPlayerOne && !!_this.occupied) {
-          // TODO: Start game
-          alert("Game starting!");
+        } else if (!!_this2.userIsPlayerOne && !!_this2.occupied) {
+          _this2.startGameRequest();
         } else {
           // TODO: Better alert message
           alert("Unable to join: Game is already full.");
@@ -21700,6 +21702,23 @@ __webpack_require__.r(__webpack_exports__);
       })["catch"](function (error) {
         console.log(error);
       });
+    },
+    startGameRequest: function startGameRequest() {
+      var _this3 = this;
+      axios__WEBPACK_IMPORTED_MODULE_2__["default"].post('/start-game', {
+        key: this.key
+      }).then(function (response) {
+        _this3.startGame();
+      })["catch"](function (error) {
+        console.log(error);
+      });
+      this.subscribeToChannel();
+    },
+    startGame: function startGame() {
+      this.gameStarted = true;
+    },
+    makeMove: function makeMove(board) {
+      console.log(board);
     }
   },
   created: function created() {},
@@ -21863,12 +21882,25 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
 
-var _hoisted_1 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", null, "Private match", -1 /* HOISTED */);
-var _hoisted_2 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Give this link to whoever you want to join your game:", -1 /* HOISTED */);
-
+var _hoisted_1 = {
+  key: 0
+};
+var _hoisted_2 = {
+  key: 0
+};
+var _hoisted_3 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Give this link to whoever you want to join your game:", -1 /* HOISTED */);
+var _hoisted_4 = {
+  key: 1
+};
+var _hoisted_5 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Waiting for game to start...", -1 /* HOISTED */);
+var _hoisted_6 = [_hoisted_5];
+var _hoisted_7 = {
+  key: 1
+};
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_v_btn = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("v-btn");
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [_hoisted_1, _hoisted_2, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.joinUrl), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_v_btn, {
+  var _component_BoardComponent = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("BoardComponent");
+  return !$data.gameStarted ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [!!$data.userIsPlayerOne ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_2, [_hoisted_3, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.joinUrl), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_v_btn, {
     onClick: _cache[0] || (_cache[0] = function ($event) {
       return $options.checkIfOccupied(true);
     })
@@ -21877,7 +21909,11 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" Start game ")];
     }),
     _: 1 /* STABLE */
-  })], 64 /* STABLE_FRAGMENT */);
+  })])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_4, [].concat(_hoisted_6)))])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_BoardComponent, {
+    multiplayer: true,
+    color: "black",
+    onMakeMove: $options.makeMove
+  }, null, 8 /* PROPS */, ["onMakeMove"])]));
 }
 
 /***/ }),

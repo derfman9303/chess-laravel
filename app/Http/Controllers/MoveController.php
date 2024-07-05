@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\MoveService;
+use App\Events\StartGame;
 use Pusher\Pusher;
 
 class MoveController extends Controller
@@ -20,7 +21,21 @@ class MoveController extends Controller
     }
 
     function makeMove(Request $request) {
-        event(new \App\Events\TestNotification($request->input('key')));
+        event(new \App\Events\TestNotification($request->input('key'), 'opponentMoved'));
+    }
+
+    function startGame(Request $request) {
+        $playerOneIsWhite = (bool)random_int(0, 1);
+        $timeLimit = $request->input('timeLimit', 30);
+
+        $response = [
+            'playerOneIsWhite' => $playerOneIsWhite,
+            'timeLimit' => $timeLimit,
+        ];
+
+        event(new StartGame($request->input('key')));
+
+        return response()->json($response);
     }
 
     function isChannelOccupied(Request $request) {

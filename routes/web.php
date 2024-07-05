@@ -31,6 +31,7 @@ Route::get('/random-match', function () {
 
 Route::post('/get-move', 'App\Http\Controllers\MoveController@getMove');
 Route::post('/make-move', 'App\Http\Controllers\MoveController@makeMove');
+Route::post('/start-game', 'App\Http\Controllers\MoveController@startGame');
 Route::post('/is-channel-occupied', 'App\Http\Controllers\MoveController@isChannelOccupied');
 
 Route::get('/test-database', function () {

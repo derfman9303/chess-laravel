@@ -1,17 +1,29 @@
 <template>
-    <h1>Private match</h1>
-    <p>Give this link to whoever you want to join your game:</p>
-    <p>{{ joinUrl }}</p>
-    <v-btn @click="checkIfOccupied(true)">
-        Start game
-    </v-btn>
+    <div v-if="!gameStarted">
+        <div v-if="!!userIsPlayerOne">
+            <p>Give this link to whoever you want to join your game:</p>
+            <p>{{ joinUrl }}</p>
+            <v-btn @click="checkIfOccupied(true)">
+                Start game
+            </v-btn>
+        </div>
+        <div v-else>
+            <p>Waiting for game to start...</p>
+        </div>
+    </div>
+    <div v-else>
+        <BoardComponent :multiplayer="true" color="black" @makeMove="makeMove"></BoardComponent>
+    </div>
 </template>
 
 <script>
     import axios from 'axios';
+    import BoardComponent from './BoardComponent';
+    import chessMixin from '../mixins/chessMixin';
 
     export default {
         name: 'PrivateMatchComponent',
+        mixins: [chessMixin],
         data() {
             return {
                 board: null,
@@ -19,30 +31,25 @@
                 joinUrl: null,
                 userIsPlayerOne: true,
                 occupied: false,
+                timeLimit: 30,
+                gameStarted: false,
+                color: null,
             }
         },
 
+        components: {
+            BoardComponent,
+        },
+
         methods: {
-            makeMove() {
-                let moveData = {
-                    board: null,
-                    key: this.key,
-                };
-
-                axios.post('/make-move', moveData)
-                    .then(response => {
-                        console.log(response);
-                    })
-                    .catch(error => {
-                        console.log(error);
-                    });
-            },
-
             subscribeToChannel() {
                 console.log("Subscribing...");
                 Echo.channel('privatematch-' + this.key)
                 .listen('.opponentMoved', (e) => {
                     console.log('listening event', e);
+                })
+                .listen('.startGame', (e) => {
+                    this.startGame();
                 });
             },
 
@@ -72,8 +79,7 @@
                                 alert("Player 2 has not joined the game yet :(");
                             }
                         } else if (!!this.userIsPlayerOne && !!this.occupied) {
-                            // TODO: Start game
-                            alert("Game starting!");
+                            this.startGameRequest();
                         } else {
                             // TODO: Better alert message
                             alert("Unable to join: Game is already full.");
@@ -82,6 +88,26 @@
                     .catch(error => {
                         console.log(error);
                     });
+            },
+
+            startGameRequest() {
+                axios.post('/start-game', {key: this.key})
+                    .then(response => {
+                        this.startGame();
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+
+                this.subscribeToChannel();
+            },
+
+            startGame() {
+                this.gameStarted = true;
+            },
+
+            makeMove(board) {
+                console.log(board);
             },
         },
 
