@@ -943,14 +943,7 @@ export default {
         },
 
         handleClick(event) {
-            if (!!this.multiplayer) {
-                this.handleClickMultiPlayer(event);
-            } else {
-                this.handleClickSinglePlayer(event);
-            }
-        },
 
-        async handleClickSinglePlayer(event) {
             // For tracking execution time
             const t0 = performance.now();
 
@@ -964,41 +957,19 @@ export default {
 
             // If the user clicked on a square (or the svg/path of the piece inside the square), otherwise do nothing
             if (currentElement && currentElement.classList.contains('square')) {
-
                 let r = parseInt(currentElement.getAttribute('data-r'));
                 let s = parseInt(currentElement.getAttribute('data-s'));
 
                 if (this.selectedPiece !== null) {
                     this.performActionOnSelectedPiece(r, s);
 
-                    // AI makes move
-                    if (!this.turn) {
-                        const move      = await this.getMove(this.board, this.pieces, this.turn, 3);
-                        const index     = parseInt(move[0]);
-                        const row       = parseInt(move[1]);
-                        const square    = parseInt(move[2]);
-                        let piece       = this.pieces[index];
-                        const oldRow    = piece.row;
-                        const oldSquare = piece.square;
-
-                        console.log(move);
-
-                        if (move !== false) {
-                            if (this.validCastle(this.pieces[this.board[0][4]], this.pieces, this.board, row, square)) {
-                                this.castle(row, square, this.board[0][4], this.board, this.pieces);
-                            } else {
-                                this.movePiece(row, square, piece, this.pieces, index, this.board);
-                            }
-
-                            this.removeHighlighting();
-                            this.removePreviousMoveHighlighting();
-                            this.addPreviousMoveHighlighting(oldRow, oldSquare, piece.row, piece.square, this.grid);
-                            this.switchTurns();
-                            this.reloadGrid();
-                        } else {
-                            // Checkmate by white? Stalemate?
-                        }
+                    // Where the logic branches out for either singleplayer or multiplayer
+                    if (!!this.multiplayer) {
+                        this.handleClickMultiPlayer(event);
+                    } else {
+                        this.handleClickSinglePlayer(event);
                     }
+
                 } else if (this.selectPiece(r, s)) {
 
                     this.selectClickedPiece(r, s);
@@ -1009,31 +980,40 @@ export default {
             console.log(`Call to handleClick() took ${t1 - t0} milliseconds.`);
         },
 
-        async handleClickMultiPlayer(event) {
-            console.log("Multiplayer click");
+        async handleClickSinglePlayer() {
+            // AI makes move
+            if (!this.turn) {
+                const move      = await this.getMove(this.board, this.pieces, this.turn, 3);
+                const index     = parseInt(move[0]);
+                const row       = parseInt(move[1]);
+                const square    = parseInt(move[2]);
+                let piece       = this.pieces[index];
+                const oldRow    = piece.row;
+                const oldSquare = piece.square;
 
-            // Starting from the clicked element
-            let currentElement = event.target;
+                console.log(move);
 
-            // Continue traversing up the DOM tree until a parent with the 'square' class is found
-            while (currentElement && !currentElement.classList.contains('square')) {
-                currentElement = currentElement.parentElement;
-            }
+                if (move !== false) {
+                    if (this.validCastle(this.pieces[this.board[0][4]], this.pieces, this.board, row, square)) {
+                        this.castle(row, square, this.board[0][4], this.board, this.pieces);
+                    } else {
+                        this.movePiece(row, square, piece, this.pieces, index, this.board);
+                    }
 
-            // If the user clicked on a square (or the svg/path of the piece inside the square), otherwise do nothing
-            if (currentElement && currentElement.classList.contains('square')) {
-                let r = parseInt(currentElement.getAttribute('data-r'));
-                let s = parseInt(currentElement.getAttribute('data-s'));
-
-                if (this.selectedPiece !== null) {
-                    this.performActionOnSelectedPiece(r, s);
-
-                    // TODO: Make multiplayer move request here
-                } else if (this.selectPiece(r, s)) {
-
-                    this.selectClickedPiece(r, s);
+                    this.removeHighlighting();
+                    this.removePreviousMoveHighlighting();
+                    this.addPreviousMoveHighlighting(oldRow, oldSquare, piece.row, piece.square, this.grid);
+                    this.switchTurns();
+                    this.reloadGrid();
+                } else {
+                    // Checkmate by white? Stalemate?
                 }
             }
+        },
+
+        async handleClickMultiPlayer(event) {
+
+            // TODO: Make multiplayer move request here
         },
 
         selectClickedPiece(r, s) {

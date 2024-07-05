@@ -22669,47 +22669,51 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       });
     },
     handleClick: function handleClick(event) {
-      if (!!this.multiplayer) {
-        this.handleClickMultiPlayer(event);
-      } else {
-        this.handleClickSinglePlayer(event);
+      // For tracking execution time
+      var t0 = performance.now();
+
+      // Starting from the clicked element
+      var currentElement = event.target;
+
+      // Continue traversing up the DOM tree until a parent with the 'square' class is found
+      while (currentElement && !currentElement.classList.contains('square')) {
+        currentElement = currentElement.parentElement;
       }
+
+      // If the user clicked on a square (or the svg/path of the piece inside the square), otherwise do nothing
+      if (currentElement && currentElement.classList.contains('square')) {
+        var r = parseInt(currentElement.getAttribute('data-r'));
+        var s = parseInt(currentElement.getAttribute('data-s'));
+        if (this.selectedPiece !== null) {
+          this.performActionOnSelectedPiece(r, s);
+
+          // Where the logic branches out for either singleplayer or multiplayer
+          if (!!this.multiplayer) {
+            this.handleClickMultiPlayer(event);
+          } else {
+            this.handleClickSinglePlayer(event);
+          }
+        } else if (this.selectPiece(r, s)) {
+          this.selectClickedPiece(r, s);
+        }
+      }
+      var t1 = performance.now();
+      console.log("Call to handleClick() took ".concat(t1 - t0, " milliseconds."));
     },
-    handleClickSinglePlayer: function handleClickSinglePlayer(event) {
+    handleClickSinglePlayer: function handleClickSinglePlayer() {
       var _this = this;
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        var t0, currentElement, r, s, move, index, row, square, piece, oldRow, oldSquare, t1;
+        var move, index, row, square, piece, oldRow, oldSquare;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
-              // For tracking execution time
-              t0 = performance.now(); // Starting from the clicked element
-              currentElement = event.target; // Continue traversing up the DOM tree until a parent with the 'square' class is found
-              while (currentElement && !currentElement.classList.contains('square')) {
-                currentElement = currentElement.parentElement;
-              }
-
-              // If the user clicked on a square (or the svg/path of the piece inside the square), otherwise do nothing
-              if (!(currentElement && currentElement.classList.contains('square'))) {
-                _context.next = 23;
-                break;
-              }
-              r = parseInt(currentElement.getAttribute('data-r'));
-              s = parseInt(currentElement.getAttribute('data-s'));
-              if (!(_this.selectedPiece !== null)) {
-                _context.next = 22;
-                break;
-              }
-              _this.performActionOnSelectedPiece(r, s);
-
-              // AI makes move
               if (_this.turn) {
-                _context.next = 20;
+                _context.next = 12;
                 break;
               }
-              _context.next = 11;
+              _context.next = 3;
               return _this.getMove(_this.board, _this.pieces, _this.turn, 3);
-            case 11:
+            case 3:
               move = _context.sent;
               index = parseInt(move[0]);
               row = parseInt(move[1]);
@@ -22732,17 +22736,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               } else {
                 // Checkmate by white? Stalemate?
               }
-            case 20:
-              _context.next = 23;
-              break;
-            case 22:
-              if (_this.selectPiece(r, s)) {
-                _this.selectClickedPiece(r, s);
-              }
-            case 23:
-              t1 = performance.now();
-              console.log("Call to handleClick() took ".concat(t1 - t0, " milliseconds."));
-            case 25:
+            case 12:
             case "end":
               return _context.stop();
           }
@@ -22750,41 +22744,19 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       }))();
     },
     handleClickMultiPlayer: function handleClickMultiPlayer(event) {
-      var _this2 = this;
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
-        var currentElement, r, s;
         return _regeneratorRuntime().wrap(function _callee2$(_context2) {
           while (1) switch (_context2.prev = _context2.next) {
             case 0:
-              console.log("Multiplayer click");
-
-              // Starting from the clicked element
-              currentElement = event.target; // Continue traversing up the DOM tree until a parent with the 'square' class is found
-              while (currentElement && !currentElement.classList.contains('square')) {
-                currentElement = currentElement.parentElement;
-              }
-
-              // If the user clicked on a square (or the svg/path of the piece inside the square), otherwise do nothing
-              if (currentElement && currentElement.classList.contains('square')) {
-                r = parseInt(currentElement.getAttribute('data-r'));
-                s = parseInt(currentElement.getAttribute('data-s'));
-                if (_this2.selectedPiece !== null) {
-                  _this2.performActionOnSelectedPiece(r, s);
-
-                  // TODO: Make multiplayer move request here
-                } else if (_this2.selectPiece(r, s)) {
-                  _this2.selectClickedPiece(r, s);
-                }
-              }
-            case 4:
             case "end":
               return _context2.stop();
           }
         }, _callee2);
       }))();
-    },
+    } // TODO: Make multiplayer move request here
+    ,
     selectClickedPiece: function selectClickedPiece(r, s) {
-      var _this3 = this;
+      var _this2 = this;
       if (this.getSelectedPiece().color === 'white' && this.getTurn() === 'white') {
         var totalValidPieces = this.getValidPieces(this.board, this.pieces, this.turn);
         var opponentPieces = totalValidPieces[1];
@@ -22794,7 +22766,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           Object.keys(validMoves).forEach(function (key) {
             var vr = key.split(',')[0];
             var vs = key.split(',')[1];
-            _this3.grid[vr][vs].classList.add(validMoves[key]);
+            _this2.grid[vr][vs].classList.add(validMoves[key]);
           });
         } else {
           this.selectedPiece = null;
