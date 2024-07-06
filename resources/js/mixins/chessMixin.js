@@ -981,6 +981,7 @@ export default {
         },
 
         async handleClickSinglePlayer() {
+
             // AI makes move
             if (!this.turn) {
                 const move      = await this.getMove(this.board, this.pieces, this.turn, 3);
@@ -1064,6 +1065,20 @@ export default {
             }
 
             this.selectedPiece = null;
+        },
+
+        rotateBoardElements() {
+            if (!!this.rotateBoard) {
+                document.getElementById("board").style.transform = "translate(-50%, -50%) rotate(180deg)";
+
+                for (let i = 0; i < this.squares.length; i++) {
+                    this.squares[i].style.transform = "rotate(180deg)";
+                }
+            }
+        },
+
+        checkIfRotateBoard() {
+            return this.playerOneIsWhite !== this.userIsPlayerOne;
         },
     }
 }

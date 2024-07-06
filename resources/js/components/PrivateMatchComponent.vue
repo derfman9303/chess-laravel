@@ -12,7 +12,7 @@
         </div>
     </div>
     <div v-else>
-        <BoardComponent :multiplayer="true" color="black" @makeMove="makeMove"></BoardComponent>
+        <BoardComponent :multiplayer="true" :rotate-board="rotateBoard" color="black" @makeMove="makeMove"></BoardComponent>
     </div>
 </template>
 
@@ -30,6 +30,8 @@
                 key: Date.now(),
                 joinUrl: null,
                 userIsPlayerOne: true,
+                playerOneIsWhite: true,
+                rotateBoard: false,
                 occupied: false,
                 timeLimit: 30,
                 gameStarted: false,
@@ -49,6 +51,9 @@
                     console.log('listening event', e);
                 })
                 .listen('.startGame', (e) => {
+                    this.playerOneIsWhite = e.playerOneIsWhite;
+                    this.timeLimit = e.timeLimit;
+
                     this.startGame();
                 });
             },
@@ -69,7 +74,6 @@
                 axios.post('/is-channel-occupied', {channel: 'privatematch-' + this.key})
                     .then(response => {
                         this.occupied = response.data.occupied;
-                        console.log(this.occupied);
 
                         // If user is not player 1, and no other player has joined, then they should be allowed to join. Otherwise, the game is full
                         if (!this.userIsPlayerOne && !this.occupied) {
@@ -93,7 +97,7 @@
             startGameRequest() {
                 axios.post('/start-game', {key: this.key})
                     .then(response => {
-                        this.startGame();
+
                     })
                     .catch(error => {
                         console.log(error);
@@ -102,7 +106,12 @@
                 this.subscribeToChannel();
             },
 
+            /**
+             * Logic that should be ran once the start-game event has been received
+             */
             startGame() {
+                this.rotateBoard = this.checkIfRotateBoard();
+
                 this.gameStarted = true;
             },
 

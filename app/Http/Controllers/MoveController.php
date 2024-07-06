@@ -33,7 +33,7 @@ class MoveController extends Controller
             'timeLimit' => $timeLimit,
         ];
 
-        event(new StartGame($request->input('key')));
+        event(new StartGame($request->input('key'), $playerOneIsWhite, $timeLimit));
 
         return response()->json($response);
     }

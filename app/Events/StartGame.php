@@ -15,10 +15,14 @@ class StartGame implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $key;
+    public $playerOneIsWhite;
+    public $timeLimit;
 
-    public function __construct($key)
+    public function __construct($key, $playerOneIsWhite, $timeLimit)
     {
         $this->key = $key;
+        $this->playerOneIsWhite = $playerOneIsWhite;
+        $this->timeLimit = $timeLimit;
     }
 
     public function broadcastOn()

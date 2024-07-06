@@ -21458,6 +21458,10 @@ __webpack_require__.r(__webpack_exports__);
     multiplayer: {
       type: Boolean,
       "default": false
+    },
+    rotateBoard: {
+      type: Boolean,
+      "default": false
     }
   },
   created: function created() {
@@ -21471,6 +21475,7 @@ __webpack_require__.r(__webpack_exports__);
     this.loadBoard();
     this.reloadGrid();
     this.setCoordinatesOfSquares();
+    this.rotateBoardElements();
   }
 });
 
@@ -21539,6 +21544,8 @@ __webpack_require__.r(__webpack_exports__);
       key: Date.now(),
       joinUrl: null,
       userIsPlayerOne: true,
+      playerOneIsWhite: true,
+      rotateBoard: false,
       occupied: false,
       timeLimit: 30,
       gameStarted: false,
@@ -21555,6 +21562,8 @@ __webpack_require__.r(__webpack_exports__);
       Echo.channel('privatematch-' + this.key).listen('.opponentMoved', function (e) {
         console.log('listening event', e);
       }).listen('.startGame', function (e) {
+        _this.playerOneIsWhite = e.playerOneIsWhite;
+        _this.timeLimit = e.timeLimit;
         _this.startGame();
       });
     },
@@ -21574,7 +21583,6 @@ __webpack_require__.r(__webpack_exports__);
         channel: 'privatematch-' + this.key
       }).then(function (response) {
         _this2.occupied = response.data.occupied;
-        console.log(_this2.occupied);
 
         // If user is not player 1, and no other player has joined, then they should be allowed to join. Otherwise, the game is full
         if (!_this2.userIsPlayerOne && !_this2.occupied) {
@@ -21594,17 +21602,18 @@ __webpack_require__.r(__webpack_exports__);
       });
     },
     startGameRequest: function startGameRequest() {
-      var _this3 = this;
       axios__WEBPACK_IMPORTED_MODULE_2__["default"].post('/start-game', {
         key: this.key
-      }).then(function (response) {
-        _this3.startGame();
-      })["catch"](function (error) {
+      }).then(function (response) {})["catch"](function (error) {
         console.log(error);
       });
       this.subscribeToChannel();
     },
+    /**
+     * Logic that should be ran once the start-game event has been received
+     */
     startGame: function startGame() {
+      this.rotateBoard = this.checkIfRotateBoard();
       this.gameStarted = true;
     },
     makeMove: function makeMove(board) {
@@ -21655,7 +21664,6 @@ var _hoisted_9 = [_hoisted_1];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
     id: "board",
-    "class": "position-absolute top-50 start-50 translate-middle",
     onClick: _cache[0] || (_cache[0] = function () {
       return _ctx.handleClick && _ctx.handleClick.apply(_ctx, arguments);
     })
@@ -21801,9 +21809,10 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     _: 1 /* STABLE */
   })])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_4, [].concat(_hoisted_6)))])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_BoardComponent, {
     multiplayer: true,
+    "rotate-board": $data.rotateBoard,
     color: "black",
     onMakeMove: $options.makeMove
-  }, null, 8 /* PROPS */, ["onMakeMove"])]));
+  }, null, 8 /* PROPS */, ["rotate-board", "onMakeMove"])]));
 }
 
 /***/ }),
@@ -22797,6 +22806,17 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         this.removeHighlighting();
       }
       this.selectedPiece = null;
+    },
+    rotateBoardElements: function rotateBoardElements() {
+      if (!!this.rotateBoard) {
+        document.getElementById("board").style.transform = "translate(-50%, -50%) rotate(180deg)";
+        for (var i = 0; i < this.squares.length; i++) {
+          this.squares[i].style.transform = "rotate(180deg)";
+        }
+      }
+    },
+    checkIfRotateBoard: function checkIfRotateBoard() {
+      return this.playerOneIsWhite !== this.userIsPlayerOne;
     }
   }
 });
@@ -31512,7 +31532,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.square {\r\n        height: 50px;\r\n        width: 50px;\r\n        padding: 0;\n}\n.light {\r\n        background-color: #b5b4b3;\r\n        border: 1px solid #b5b4b3;\n}\n.dark {\r\n        background-color: #70706f;\r\n        border: 1px solid #70706f;\n}\n.square svg {\r\n        height: 100%;\r\n        width: 100%;\r\n        padding: 7.5px;\n}\r\n\r\n    /**\r\n    * The below classes use div because they need higher specificity to take precedence over the previous-move class\r\n    */\ndiv.highlighted {\r\n        border: 4px solid #e3d756;\n}\ndiv.capture {\r\n        border: 4px solid #e64949;\n}\ndiv.castle {\r\n        border: 4px solid #4cb2e6;\n}\n.previous-move {\r\n        border: 4px solid #91c472;\n}\n@media screen and (max-width: 769px) {\n#board {\r\n            width: 90vw;\n}\n.square {\r\n            height: calc(90vw / 8);\r\n            width: calc(90vw / 8);\n}\n.square svg {\r\n            padding: 5px;\n}\n.captured-tray {\r\n            width: 90vw;\n}\n}\r\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n#board {\r\n        position: absolute;\r\n        top: 50%;\r\n        left: 50%;\r\n        transform: translate(-50%, -50%);\n}\n.square {\r\n        height: 50px;\r\n        width: 50px;\r\n        padding: 0;\n}\n.light {\r\n        background-color: #b5b4b3;\r\n        border: 1px solid #b5b4b3;\n}\n.dark {\r\n        background-color: #70706f;\r\n        border: 1px solid #70706f;\n}\n.square svg {\r\n        height: 100%;\r\n        width: 100%;\r\n        padding: 7.5px;\n}\r\n\r\n    /**\r\n    * The below classes use div because they need higher specificity to take precedence over the previous-move class\r\n    */\ndiv.highlighted {\r\n        border: 4px solid #e3d756;\n}\ndiv.capture {\r\n        border: 4px solid #e64949;\n}\ndiv.castle {\r\n        border: 4px solid #4cb2e6;\n}\n.previous-move {\r\n        border: 4px solid #91c472;\n}\n@media screen and (max-width: 769px) {\n#board {\r\n            width: 90vw;\n}\n.square {\r\n            height: calc(90vw / 8);\r\n            width: calc(90vw / 8);\n}\n.square svg {\r\n            padding: 5px;\n}\n.captured-tray {\r\n            width: 90vw;\n}\n}\r\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

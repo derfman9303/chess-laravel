@@ -1,7 +1,6 @@
 <template>
     <div
         id="board"
-        class="position-absolute top-50 start-50 translate-middle"
         @click="handleClick"
     >
         <div class="d-flex flex-nowrap">
@@ -120,7 +119,12 @@
             multiplayer: {
                 type: Boolean,
                 default: false,
-            }
+            },
+
+            rotateBoard: {
+                type: Boolean,
+                default: false,
+            },
         },
 
         created() {
@@ -136,11 +140,19 @@
             this.loadBoard();
             this.reloadGrid();
             this.setCoordinatesOfSquares();
+            this.rotateBoardElements();
         }
     }
 </script>
 
 <style>
+    #board {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
     .square {
         height: 50px;
         width: 50px;
