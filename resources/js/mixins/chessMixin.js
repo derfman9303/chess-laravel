@@ -965,9 +965,9 @@ export default {
 
                     // Where the logic branches out for either singleplayer or multiplayer
                     if (!!this.multiplayer) {
-                        this.handleClickMultiPlayer(event);
+                        this.handleClickMultiPlayer();
                     } else {
-                        this.handleClickSinglePlayer(event);
+                        this.handleClickSinglePlayer();
                     }
 
                 } else if (this.selectPiece(r, s)) {
@@ -1012,13 +1012,25 @@ export default {
             }
         },
 
-        async handleClickMultiPlayer(event) {
+        async handleClickMultiPlayer() {
 
-            // TODO: Make multiplayer move request here
+            let moveData = {
+                key: this.gameKey,
+                board: this.board,
+                pieces: this.pieces,
+            };
+
+            axios.post('/make-move', moveData)
+                .then(response => {
+                    console.log(response);
+                })
+                .catch(error => {
+                    console.log(error);
+                });
         },
 
         selectClickedPiece(r, s) {
-            if (this.getSelectedPiece().color === 'white' && this.getTurn() === 'white') {
+            if (this.getSelectedPiece().color === this.playerColor && this.getTurn() === this.playerColor) {
                 let totalValidPieces = this.getValidPieces(this.board, this.pieces, this.turn);
                 let opponentPieces   = totalValidPieces[1];
                 let king             = totalValidPieces[2];

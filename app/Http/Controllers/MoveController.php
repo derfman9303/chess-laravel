@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\MoveService;
 use App\Events\StartGame;
+use App\Events\PlayerMoved;
 use Pusher\Pusher;
 
 class MoveController extends Controller
@@ -21,7 +22,19 @@ class MoveController extends Controller
     }
 
     function makeMove(Request $request) {
-        event(new \App\Events\TestNotification($request->input('key'), 'opponentMoved'));
+        $key    = $request->input('key');
+        $board  = $request->input('board');
+        $pieces = $request->input('pieces');
+
+        $response = [
+            'key'    => $key,
+            'board'  => $board,
+            'pieces' => $pieces,
+        ];
+
+        event(new PlayerMoved($key, $board, $pieces));
+
+        return response()->json($response);
     }
 
     function startGame(Request $request) {

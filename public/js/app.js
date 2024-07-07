@@ -21454,6 +21454,13 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
 
+  methods: {
+    reloadBoardWithResponseData: function reloadBoardWithResponseData(response) {
+      this.board = response.board;
+      this.pieces = response.pieces;
+      this.reloadGrid();
+    }
+  },
   props: {
     multiplayer: {
       type: Boolean,
@@ -21462,6 +21469,14 @@ __webpack_require__.r(__webpack_exports__);
     rotateBoard: {
       type: Boolean,
       "default": false
+    },
+    playerColor: {
+      type: String,
+      "default": "white"
+    },
+    gameKey: {
+      type: String,
+      "default": "Hello"
     }
   },
   created: function created() {
@@ -21540,11 +21555,11 @@ __webpack_require__.r(__webpack_exports__);
   mixins: [_mixins_chessMixin__WEBPACK_IMPORTED_MODULE_1__["default"]],
   data: function data() {
     return {
-      board: null,
-      key: Date.now(),
+      key: Date.now().toString(),
       joinUrl: null,
       userIsPlayerOne: true,
       playerOneIsWhite: true,
+      playerColor: "white",
       rotateBoard: false,
       occupied: false,
       timeLimit: 30,
@@ -21559,8 +21574,8 @@ __webpack_require__.r(__webpack_exports__);
     subscribeToChannel: function subscribeToChannel() {
       var _this = this;
       console.log("Subscribing...");
-      Echo.channel('privatematch-' + this.key).listen('.opponentMoved', function (e) {
-        console.log('listening event', e);
+      Echo.channel('privatematch-' + this.key).listen('.playerMoved', function (e) {
+        _this.$refs.boardComponent.reloadBoardWithResponseData(e);
       }).listen('.startGame', function (e) {
         _this.playerOneIsWhite = e.playerOneIsWhite;
         _this.timeLimit = e.timeLimit;
@@ -21614,10 +21629,8 @@ __webpack_require__.r(__webpack_exports__);
      */
     startGame: function startGame() {
       this.rotateBoard = this.checkIfRotateBoard();
+      this.playerColor = this.rotateBoard ? "black" : "white";
       this.gameStarted = true;
-    },
-    makeMove: function makeMove(board) {
-      console.log(board);
     }
   },
   created: function created() {},
@@ -21810,9 +21823,12 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   })])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_4, [].concat(_hoisted_6)))])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_BoardComponent, {
     multiplayer: true,
     "rotate-board": $data.rotateBoard,
+    "player-color": $data.playerColor,
+    "game-key": $data.key,
+    ref: "boardComponent",
     color: "black",
-    onMakeMove: $options.makeMove
-  }, null, 8 /* PROPS */, ["rotate-board", "onMakeMove"])]));
+    onMakeMove: _ctx.makeMove
+  }, null, 8 /* PROPS */, ["rotate-board", "player-color", "game-key", "onMakeMove"])]));
 }
 
 /***/ }),
@@ -22698,9 +22714,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
           // Where the logic branches out for either singleplayer or multiplayer
           if (!!this.multiplayer) {
-            this.handleClickMultiPlayer(event);
+            this.handleClickMultiPlayer();
           } else {
-            this.handleClickSinglePlayer(event);
+            this.handleClickSinglePlayer();
           }
         } else if (this.selectPiece(r, s)) {
           this.selectClickedPiece(r, s);
@@ -22752,21 +22768,33 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         }, _callee);
       }))();
     },
-    handleClickMultiPlayer: function handleClickMultiPlayer(event) {
+    handleClickMultiPlayer: function handleClickMultiPlayer() {
+      var _this2 = this;
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+        var moveData;
         return _regeneratorRuntime().wrap(function _callee2$(_context2) {
           while (1) switch (_context2.prev = _context2.next) {
             case 0:
+              moveData = {
+                key: _this2.gameKey,
+                board: _this2.board,
+                pieces: _this2.pieces
+              };
+              axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/make-move', moveData).then(function (response) {
+                console.log(response);
+              })["catch"](function (error) {
+                console.log(error);
+              });
+            case 2:
             case "end":
               return _context2.stop();
           }
         }, _callee2);
       }))();
-    } // TODO: Make multiplayer move request here
-    ,
+    },
     selectClickedPiece: function selectClickedPiece(r, s) {
-      var _this2 = this;
-      if (this.getSelectedPiece().color === 'white' && this.getTurn() === 'white') {
+      var _this3 = this;
+      if (this.getSelectedPiece().color === this.playerColor && this.getTurn() === this.playerColor) {
         var totalValidPieces = this.getValidPieces(this.board, this.pieces, this.turn);
         var opponentPieces = totalValidPieces[1];
         var king = totalValidPieces[2];
@@ -22775,7 +22803,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           Object.keys(validMoves).forEach(function (key) {
             var vr = key.split(',')[0];
             var vs = key.split(',')[1];
-            _this2.grid[vr][vs].classList.add(validMoves[key]);
+            _this3.grid[vr][vs].classList.add(validMoves[key]);
           });
         } else {
           this.selectedPiece = null;

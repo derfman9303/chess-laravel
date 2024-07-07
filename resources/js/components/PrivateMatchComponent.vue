@@ -12,7 +12,7 @@
         </div>
     </div>
     <div v-else>
-        <BoardComponent :multiplayer="true" :rotate-board="rotateBoard" color="black" @makeMove="makeMove"></BoardComponent>
+        <BoardComponent :multiplayer="true" :rotate-board="rotateBoard" :player-color="playerColor" :game-key="key" ref="boardComponent" color="black" @makeMove="makeMove"></BoardComponent>
     </div>
 </template>
 
@@ -26,11 +26,11 @@
         mixins: [chessMixin],
         data() {
             return {
-                board: null,
-                key: Date.now(),
+                key: Date.now().toString(),
                 joinUrl: null,
                 userIsPlayerOne: true,
                 playerOneIsWhite: true,
+                playerColor: "white",
                 rotateBoard: false,
                 occupied: false,
                 timeLimit: 30,
@@ -47,8 +47,9 @@
             subscribeToChannel() {
                 console.log("Subscribing...");
                 Echo.channel('privatematch-' + this.key)
-                .listen('.opponentMoved', (e) => {
-                    console.log('listening event', e);
+                .listen('.playerMoved', (e) => {
+
+                    this.$refs.boardComponent.reloadBoardWithResponseData(e);
                 })
                 .listen('.startGame', (e) => {
                     this.playerOneIsWhite = e.playerOneIsWhite;
@@ -111,12 +112,9 @@
              */
             startGame() {
                 this.rotateBoard = this.checkIfRotateBoard();
+                this.playerColor = this.rotateBoard ? "black" : "white";
 
                 this.gameStarted = true;
-            },
-
-            makeMove(board) {
-                console.log(board);
             },
         },
 

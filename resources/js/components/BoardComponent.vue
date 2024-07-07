@@ -115,6 +115,15 @@
             }
         },
 
+        methods: {
+            reloadBoardWithResponseData(response) {
+                this.board  = response.board;
+                this.pieces = response.pieces;
+
+                this.reloadGrid();
+            },
+        },
+
         props: {
             multiplayer: {
                 type: Boolean,
@@ -124,6 +133,16 @@
             rotateBoard: {
                 type: Boolean,
                 default: false,
+            },
+
+            playerColor: {
+                type: String,
+                default: "white",
+            },
+
+            gameKey: {
+                type: String,
+                default: "Hello",
             },
         },
 
