@@ -21458,6 +21458,7 @@ __webpack_require__.r(__webpack_exports__);
     reloadBoardWithResponseData: function reloadBoardWithResponseData(response) {
       this.board = response.board;
       this.pieces = response.pieces;
+      this.turn = response.turn;
       this.reloadGrid();
     }
   },
@@ -22778,7 +22779,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               moveData = {
                 key: _this2.gameKey,
                 board: _this2.board,
-                pieces: _this2.pieces
+                pieces: _this2.pieces,
+                turn: _this2.turn
               };
               axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/make-move', moveData).then(function (response) {
                 console.log(response);

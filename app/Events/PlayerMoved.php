@@ -17,12 +17,14 @@ class PlayerMoved implements ShouldBroadcast
     public $key;
     public $board;
     public $pieces;
+    public $turn;
 
-    public function __construct($key, $board, $pieces)
+    public function __construct($key, $board, $pieces, $turn)
     {
-        $this->key = $key;
-        $this->board = $board;
+        $this->key    = $key;
+        $this->board  = $board;
         $this->pieces = $pieces;
+        $this->turn   = $turn;
     }
 
     public function broadcastOn()

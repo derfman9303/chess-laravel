@@ -1015,9 +1015,10 @@ export default {
         async handleClickMultiPlayer() {
 
             let moveData = {
-                key: this.gameKey,
-                board: this.board,
+                key:    this.gameKey,
+                board:  this.board,
                 pieces: this.pieces,
+                turn:   this.turn,
             };
 
             axios.post('/make-move', moveData)

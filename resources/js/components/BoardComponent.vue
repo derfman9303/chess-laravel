@@ -119,6 +119,7 @@
             reloadBoardWithResponseData(response) {
                 this.board  = response.board;
                 this.pieces = response.pieces;
+                this.turn   = response.turn;
 
                 this.reloadGrid();
             },
