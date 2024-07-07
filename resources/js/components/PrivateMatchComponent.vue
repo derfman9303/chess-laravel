@@ -12,7 +12,7 @@
         </div>
     </div>
     <div v-else>
-        <BoardComponent :multiplayer="true" :rotate-board="rotateBoard" :player-color="playerColor" :game-key="key" ref="boardComponent" color="black" @makeMove="makeMove"></BoardComponent>
+        <BoardComponent :multiplayer="true" :rotate-board="rotateBoard" :player-color="playerColor" :game-key="key" ref="boardComponent" color="black"></BoardComponent>
     </div>
 </template>
 

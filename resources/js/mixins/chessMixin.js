@@ -1019,6 +1019,10 @@ export default {
                 board:  this.board,
                 pieces: this.pieces,
                 turn:   this.turn,
+                oldR:   this.oldR,
+                oldS:   this.oldS,
+                newR:   this.newR,
+                newS:   this.newS,
             };
 
             axios.post('/make-move', moveData)
@@ -1061,6 +1065,7 @@ export default {
                 this.removeHighlighting();
                 this.removePreviousMoveHighlighting();
                 this.addPreviousMoveHighlighting(piece.row, piece.square, r, s, this.grid);
+                this.recordPreviousMoveData(piece.row, piece.square, r, s);
                 this.movePiece(r, s);
                 this.switchTurns();
                 this.reloadGrid();
@@ -1069,6 +1074,7 @@ export default {
                 this.removeHighlighting();
                 this.removePreviousMoveHighlighting();
                 this.addPreviousMoveHighlighting(piece.row, piece.square, r, s, this.grid);
+                this.recordPreviousMoveData(piece.row, piece.square, r, s);
                 this.castle(r, s, this.selectedPiece, this.board, this.pieces);
                 this.switchTurns();
                 this.reloadGrid();
@@ -1092,6 +1098,13 @@ export default {
 
         checkIfRotateBoard() {
             return this.playerOneIsWhite !== this.userIsPlayerOne;
+        },
+
+        recordPreviousMoveData(oldR, oldS, newR, newS) {
+            this.oldR = oldR;
+            this.oldS = oldS;
+            this.newR = newR;
+            this.newS = newS;
         },
     }
 }

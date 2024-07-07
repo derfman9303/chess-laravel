@@ -26,15 +26,23 @@ class MoveController extends Controller
         $board  = $request->input('board');
         $pieces = $request->input('pieces');
         $turn   = $request->input('turn');
+        $oldR   = $request->input('oldR');
+        $oldS   = $request->input('oldS');
+        $newR   = $request->input('newR');
+        $newS   = $request->input('newS');
 
         $response = [
             'key'    => $key,
             'board'  => $board,
             'pieces' => $pieces,
             'turn'   => $turn,
+            'oldR'   => $oldR,
+            'oldS'   => $oldS,
+            'newR'   => $newR,
+            'newS'   => $newS,
         ];
 
-        event(new PlayerMoved($key, $board, $pieces, $turn));
+        event(new PlayerMoved($key, $board, $pieces, $turn, $oldR, $oldS, $newR, $newS));
 
         return response()->json($response);
     }

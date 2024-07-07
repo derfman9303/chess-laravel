@@ -21447,18 +21447,21 @@ __webpack_require__.r(__webpack_exports__);
       board: [['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'], ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'], ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'], ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'], ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'], ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'], ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'], ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty']],
       pieces: [],
       selectedPiece: null,
-      turn: true
-
-      // blackCaptured: null,
-      // whiteCaptured: null,
+      turn: true,
+      oldR: null,
+      oldS: null,
+      newR: null,
+      newS: null
     };
   },
-
   methods: {
-    reloadBoardWithResponseData: function reloadBoardWithResponseData(response) {
-      this.board = response.board;
-      this.pieces = response.pieces;
-      this.turn = response.turn;
+    reloadBoardWithResponseData: function reloadBoardWithResponseData(e) {
+      this.board = e.board;
+      this.pieces = e.pieces;
+      this.turn = e.turn;
+      this.removeHighlighting();
+      this.removePreviousMoveHighlighting();
+      this.addPreviousMoveHighlighting(e.oldR, e.oldS, e.newR, e.newS, this.grid);
       this.reloadGrid();
     }
   },
@@ -21827,9 +21830,8 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     "player-color": $data.playerColor,
     "game-key": $data.key,
     ref: "boardComponent",
-    color: "black",
-    onMakeMove: _ctx.makeMove
-  }, null, 8 /* PROPS */, ["rotate-board", "player-color", "game-key", "onMakeMove"])]));
+    color: "black"
+  }, null, 8 /* PROPS */, ["rotate-board", "player-color", "game-key"])]));
 }
 
 /***/ }),
@@ -22780,7 +22782,11 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 key: _this2.gameKey,
                 board: _this2.board,
                 pieces: _this2.pieces,
-                turn: _this2.turn
+                turn: _this2.turn,
+                oldR: _this2.oldR,
+                oldS: _this2.oldS,
+                newR: _this2.newR,
+                newS: _this2.newS
               };
               axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/make-move', moveData).then(function (response) {
                 console.log(response);
@@ -22821,6 +22827,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         this.removeHighlighting();
         this.removePreviousMoveHighlighting();
         this.addPreviousMoveHighlighting(piece.row, piece.square, r, s, this.grid);
+        this.recordPreviousMoveData(piece.row, piece.square, r, s);
         this.movePiece(r, s);
         this.switchTurns();
         this.reloadGrid();
@@ -22828,6 +22835,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         this.removeHighlighting();
         this.removePreviousMoveHighlighting();
         this.addPreviousMoveHighlighting(piece.row, piece.square, r, s, this.grid);
+        this.recordPreviousMoveData(piece.row, piece.square, r, s);
         this.castle(r, s, this.selectedPiece, this.board, this.pieces);
         this.switchTurns();
         this.reloadGrid();
@@ -22847,6 +22855,12 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     },
     checkIfRotateBoard: function checkIfRotateBoard() {
       return this.playerOneIsWhite !== this.userIsPlayerOne;
+    },
+    recordPreviousMoveData: function recordPreviousMoveData(oldR, oldS, newR, newS) {
+      this.oldR = oldR;
+      this.oldS = oldS;
+      this.newR = newR;
+      this.newS = newS;
     }
   }
 });

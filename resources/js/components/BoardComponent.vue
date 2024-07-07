@@ -109,18 +109,22 @@
                 pieces: [],
                 selectedPiece: null,
                 turn: true,
-
-                // blackCaptured: null,
-                // whiteCaptured: null,
+                oldR: null,
+                oldS: null,
+                newR: null,
+                newS: null,
             }
         },
 
         methods: {
-            reloadBoardWithResponseData(response) {
-                this.board  = response.board;
-                this.pieces = response.pieces;
-                this.turn   = response.turn;
+            reloadBoardWithResponseData(e) {
+                this.board  = e.board;
+                this.pieces = e.pieces;
+                this.turn   = e.turn;
 
+                this.removeHighlighting();
+                this.removePreviousMoveHighlighting();
+                this.addPreviousMoveHighlighting(e.oldR, e.oldS, e.newR, e.newS, this.grid);
                 this.reloadGrid();
             },
         },
